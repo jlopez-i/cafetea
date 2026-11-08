@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cafetea: cuaderno de dial-in de espresso con cronómetro, diagnóstico en taza, diario y gráficos de extracción.">
+<meta name="theme-color" content="#1c1612">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 34 34%27%3E%3Ccircle cx=%2717%27 cy=%2717%27 r=%2715.5%27 fill=%27none%27 stroke=%27%231f1813%27 stroke-width=%272%27/%3E%3Ccircle cx=%2717%27 cy=%2717%27 r=%2711%27 fill=%27%23a95c17%27/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Cafetea</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  /* Layout: cuaderno de dial-in. Formulario a la izquierda, lectura tipo báscula a la derecha (fija en escritorio); análisis en rejilla de gráficos. */
+  :root {
+    --bg: #f1eee9;          /* porcelana de cata */
+    --surface: #fffdfa;
+    --surface-2: #f7f4ef;
+    --ink: #1f1813;         /* espresso */
+    --ink-2: #4f453c;
+    --muted: #7c7064;
+    --line: #e2dcd3;
+    --accent: #a95c17;      /* crema */
+    --accent-ink: #ffffff;
+    --accent-soft: #f4e4d2;
+    --display-bg: #1c1612;  /* lectura tipo báscula */
+    --display-ink: #f6ede2;
+    --display-muted: #a8988a;
+    --display-line: #3a2f27;
+    --display-accent: #f0a65c;
+    --grid: #ece6de;
+    --axis: #c9c0b4;
+    --zone: rgba(169, 92, 23, 0.08);
+    --zone-line: rgba(169, 92, 23, 0.55);
+    --p-sub: #2a78d6;
+    --p-bal: #1baf7a;
+    --p-over: #eb6834;
+    --good: #0f7a3d;
+    --warn: #9a6400;
+    --bad: #b8322f;
+    --focus: #2a78d6;
+    --shadow: 0 1px 2px rgba(31, 24, 19, 0.06), 0 8px 24px rgba(31, 24, 19, 0.06);
+    --f-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --f-body: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --r: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14110f; --surface: #211c18; --surface-2: #1a1613; --ink: #f3ece4; --ink-2: #cfc3b6; --muted: #9d9184;
+      --line: #352d27; --accent: #e5994f; --accent-ink: #1c1612; --accent-soft: #3a2a1c;
+      --display-bg: #0d0b0a; --display-ink: #f6ede2; --display-muted: #9a8b7d; --display-line: #2e2620; --display-accent: #f0a65c;
+      --grid: #2c2520; --axis: #4a4038; --zone: rgba(229, 153, 79, 0.10); --zone-line: rgba(229, 153, 79, 0.6);
+      --p-sub: #3987e5; --p-bal: #199e70; --p-over: #d95926;
+      --good: #4cc27c; --warn: #e8b04a; --bad: #f07a72; --focus: #6aa8f0;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14110f; --surface: #211c18; --surface-2: #1a1613; --ink: #f3ece4; --ink-2: #cfc3b6; --muted: #9d9184;
+    --line: #352d27; --accent: #e5994f; --accent-ink: #1c1612; --accent-soft: #3a2a1c;
+    --display-bg: #0d0b0a; --display-ink: #f6ede2; --display-muted: #9a8b7d; --display-line: #2e2620; --display-accent: #f0a65c;
+    --grid: #2c2520; --axis: #4a4038; --zone: rgba(229, 153, 79, 0.10); --zone-line: rgba(229, 153, 79, 0.6);
+    --p-sub: #3987e5; --p-bal: #199e70; --p-over: #d95926;
+    --good: #4cc27c; --warn: #e8b04a; --bad: #f07a72; --focus: #6aa8f0;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+  h1, h2, h3, p { margin: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+  /* Cabecera */
+  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; gap: 24px; padding-block: 12px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .brand svg { flex: none; }
+  .brand b { font-family: var(--f-display); font-weight: 800; font-size: 30px; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1; }
+  .brand small { display: block; font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+  nav.tabs { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px; margin-left: auto; }
+  nav.tabs a { text-decoration: none; color: var(--ink-2); font-weight: 600; font-size: 14px; padding: 7px 14px; border-radius: 999px; white-space: nowrap; }
+  nav.tabs a:hover { color: var(--ink); }
+  nav.tabs a[aria-current="page"] { background: var(--ink); color: var(--bg); }
+  .sync { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .sync i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  .sync[data-s="db"] i { background: var(--good); }
+  .sync[data-s="wait"] i { background: var(--warn); }
+  @media (max-width: 720px) {
+    .top .wrap { gap: 10px; }
+    nav.tabs { order: 3; width: 100%; margin-left: 0; justify-content: space-between; }
+    nav.tabs a { flex: 1; text-align: center; padding: 7px 6px; }
+    .sync { margin-left: auto; }
+  }
+
+  main { padding-block: 28px 64px; }
+  .view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .view-head h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(34px, 5vw, 48px); line-height: 0.95; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+  .view-head p { color: var(--muted); max-width: 56ch; margin-top: 6px; }
+
+  /* Secciones de formulario */
+  .dial { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+  @media (max-width: 960px) { .dial { grid-template-columns: minmax(0, 1fr); } }
+  .stack { display: grid; gap: 16px; min-width: 0; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; min-width: 0; }
+  .panel-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .panel-h h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink); }
+  .panel-h span { font-size: 13px; color: var(--muted); }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .time-row { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; }
+  @media (max-width: 520px) { .time-row { grid-template-columns: minmax(0, 1fr); } }
+  .timer { min-width: 0; flex-wrap: wrap; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  .field > label, .lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .control { position: relative; display: flex; align-items: center; }
+  .control input, .control select, textarea {
+    width: 100%; min-width: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 15px;
+  }
+  .control input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular-nums; padding-right: 40px; }
+  .control .unit { position: absolute; right: 12px; font-size: 12px; color: var(--muted); pointer-events: none; font-family: var(--f-mono); }
+  .control input:focus, .control select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  textarea { resize: vertical; min-height: 72px; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .hint b { color: var(--ink-2); font-weight: 600; }
+  .span-2 { grid-column: span 2; }
+  @media (max-width: 420px) { .span-2 { grid-column: auto; } }
+
+  /* Temporizador */
+  .timer { display: flex; align-items: center; gap: 12px; background: var(--display-bg); color: var(--display-ink); border-radius: 8px; padding: 8px 8px 8px 14px; }
+  .timer .t { font-family: var(--f-mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 6ch; }
+  .timer .t small { font-size: 12px; color: var(--display-muted); margin-left: 2px; }
+  .timer .btns { margin-left: auto; display: flex; gap: 6px; }
+  .tbtn { border: 1px solid var(--display-line); background: transparent; color: var(--display-ink); border-radius: 6px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .tbtn.go { background: var(--display-accent); border-color: var(--display-accent); color: #1c1612; }
+  .tbtn.go[data-run="1"] { background: #e05a4c; border-color: #e05a4c; color: #fff; }
+
+  /* Segmentado perfil */
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label { display: grid; gap: 2px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+  .seg label b { font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .seg label span { font-size: 12px; color: var(--muted); }
+  .seg input:checked + label { border-color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--ink); }
+  .seg input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: 2px; }
+  @media (max-width: 480px) { .seg { grid-template-columns: 1fr; } }
+  .shape { width: 12px; height: 12px; flex: none; display: inline-block; }
+
+  /* Sliders sensoriales */
+  .sens { display: grid; gap: 12px; }
+  .sens-row { display: grid; grid-template-columns: 88px minmax(0, 1fr) 28px; gap: 12px; align-items: center; }
+  .sens-row label { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+  .sens-row output { font-family: var(--f-mono); font-size: 13px; text-align: right; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+  /* Lectura (báscula) */
+  .readout { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); display: grid; gap: 16px; }
+  @media (max-width: 960px) { .readout { position: static; } }
+  .scale { background: var(--display-bg); color: var(--display-ink); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+  .scale-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--display-muted); }
+  .cat { font-family: var(--f-mono); letter-spacing: 0.06em; padding: 3px 8px; border: 1px solid var(--display-line); border-radius: 4px; color: var(--display-accent); }
+  .big { font-family: var(--f-display); font-weight: 700; font-size: 72px; line-height: 1; margin: 14px 0 4px; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+  .big small { font-size: 30px; color: var(--display-muted); font-weight: 600; }
+  .sub-big { font-size: 13px; color: var(--display-muted); }
+  .cells { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 18px; border-top: 1px solid var(--display-line); }
+  .cell { padding: 12px 10px 0 0; display: grid; gap: 2px; }
+  .cell + .cell { padding-left: 12px; border-left: 1px solid var(--display-line); }
+  .cell span { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--display-muted); }
+  .cell b { font-family: var(--f-mono); font-weight: 500; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .cell b small { font-size: 11px; color: var(--display-muted); margin-left: 2px; }
+  .gauge { margin-top: 18px; }
+  .gauge-bar { position: relative; height: 10px; display: grid; grid-template-columns: 20fr 26fr 54fr; gap: 2px; }
+  .gauge-bar i { border-radius: 2px; background: var(--display-line); }
+  .gauge-bar i.on { background: var(--display-accent); }
+  .gauge-mark { position: absolute; top: -5px; width: 2px; height: 20px; background: var(--display-ink); border-radius: 1px; transform: translateX(-1px); transition: left 0.25s ease; }
+  .gauge-lbl { display: grid; grid-template-columns: 20fr 26fr 54fr; gap: 2px; margin-top: 6px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--display-muted); }
+  .gauge-lbl span:nth-child(2) { text-align: center; }
+
+  .diag { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 10px; }
+  .diag-h { display: flex; gap: 10px; align-items: center; }
+  .diag-h b { font-size: 15px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+  .pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); } .pill.neutral { color: var(--muted); }
+  .diag ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
+  .diag ol strong { color: var(--ink); }
+  .diag .note { font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+
+  .btn { appearance: none; border: 1px solid transparent; border-radius: 8px; padding: 12px 16px; font-weight: 700; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary { background: var(--ink); color: var(--bg); width: 100%; }
+  .btn-primary:hover { background: var(--accent); color: var(--accent-ink); }
+  .btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--ink-2); }
+  .btn-sm { padding: 6px 10px; font-size: 13px; font-weight: 600; }
+  .actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+
+  /* Diario */
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .toolbar .control { flex: 1 1 240px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .log { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+  .log-head, .log-row { display: grid; grid-template-columns: 96px minmax(0, 1.4fr) minmax(0, 1.5fr) 64px 70px 132px 56px 150px; gap: 12px; align-items: center; padding: 12px 16px; }
+  .log-head { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .log-row + .log-row { border-top: 1px solid var(--line); }
+  .log-row .date { font-size: 13px; color: var(--muted); font-family: var(--f-mono); }
+  .log-row .coffee b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-row .coffee span { font-size: 12px; color: var(--muted); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-row .rec { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .log-row .rec small { color: var(--muted); display: block; font-size: 12px; }
+  .log-row .r { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .log-row .ops { display: flex; gap: 6px; justify-content: flex-end; }
+  .ptag { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .rating { font-family: var(--f-mono); font-weight: 600; }
+  @media (max-width: 1000px) {
+    .log-head { display: none; }
+    .log-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "coffee ptag" "rec rec" "meta ops"; row-gap: 8px; }
+    .log-row .coffee { grid-area: coffee; } .log-row .ptag { grid-area: ptag; justify-self: end; }
+    .log-row .rec { grid-area: rec; } .log-row .date, .log-row .r { display: none; }
+    .log-row .meta { grid-area: meta; display: flex !important; gap: 12px; font-size: 12px; color: var(--muted); font-family: var(--f-mono); align-items: center; flex-wrap: wrap; }
+    .log-row .ops { grid-area: ops; }
+  }
+  .log-row .meta { display: none; }
+  .empty { padding: 48px 20px; text-align: center; display: grid; gap: 10px; justify-items: center; color: var(--muted); }
+  .empty b { color: var(--ink); font-size: 16px; }
+
+  /* Análisis */
+  .banner { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); color: var(--ink); border-radius: var(--r); padding: 12px 16px; margin-bottom: 16px; font-size: 14px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+  .kpi span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; }
+  .kpi b { font-family: var(--f-display); font-weight: 700; font-size: 34px; line-height: 1.05; }
+  .kpi b small { font-size: 16px; color: var(--muted); font-weight: 600; margin-left: 2px; }
+  .kpi em { font-style: normal; font-size: 12px; color: var(--muted); }
+  .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 900px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+  .chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 18px 14px; min-width: 0; display: grid; gap: 10px; align-content: start; }
+  .chart-card h3 { font-size: 16px; font-weight: 700; }
+  .chart-card .desc { font-size: 13px; color: var(--muted); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart { position: relative; width: 100%; min-height: 200px; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .tick { fill: var(--muted); font-size: 11px; font-family: var(--f-mono); }
+  .chart .axis-t { fill: var(--muted); font-size: 11px; font-family: var(--f-body); }
+  .chart .zone-t { fill: var(--accent); font-size: 11px; font-weight: 600; font-family: var(--f-body); }
+  .chart .iso-t { fill: var(--muted); font-size: 10px; font-family: var(--f-mono); }
+  .chart .lbl-in { fill: #ffffff; font-size: 11px; font-weight: 600; font-family: var(--f-mono); }
+  .chart .lbl-out { fill: var(--ink-2); font-size: 11px; font-family: var(--f-mono); }
+  .chart .end-t { fill: var(--ink); font-size: 12px; font-weight: 600; font-family: var(--f-mono); }
+  .tip { position: absolute; pointer-events: none; z-index: 5; background: var(--ink); color: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.45; min-width: 150px; max-width: 220px; box-shadow: var(--shadow); }
+  .tip b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .tip .num { font-size: 12px; }
+  .chart-empty { display: grid; place-items: center; text-align: center; min-height: 220px; color: var(--muted); font-size: 14px; border: 1px dashed var(--line); border-radius: 8px; padding: 20px; }
+  .wide { grid-column: 1 / -1; }
+
+  /* Guía */
+  .guide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 900px) { .guide { grid-template-columns: minmax(0, 1fr); } }
+  .guide .panel h2 { font-family: var(--f-display); font-weight: 700; font-size: 26px; text-transform: uppercase; line-height: 1; margin-bottom: 12px; letter-spacing: 0.01em; }
+  .guide p { color: var(--ink-2); max-width: 65ch; }
+  .guide p + p { margin-top: 8px; }
+  .tbl-wrap { overflow-x: auto; margin-top: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+  td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  td.num { font-size: 13px; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .formula { font-family: var(--f-mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 12px 0; font-size: 14px; overflow-x: auto; }
+  ul.clean { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); }
+  ul.clean strong { color: var(--ink); }
+
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 40; box-shadow: var(--shadow); max-width: calc(100vw - 32px); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#dial-in" aria-label="Cafetea, inicio">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" fill="none" stroke="var(--ink)" stroke-width="2"></circle>
+        <circle cx="17" cy="17" r="11" fill="var(--accent)"></circle>
+        <path d="M17 8.5c-3 2.6-3 5.6 0 8.5s3 5.9 0 8.5" fill="none" stroke="var(--surface)" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+      <span><b>Cafetea</b><small>Cuaderno de extracción</small></span>
+    </a>
+    <nav class="tabs" aria-label="Secciones">
+      <a href="#dial-in" data-view="dial-in">Dial-in</a>
+      <a href="#diario" data-view="diario">Diario</a>
+      <a href="#analisis" data-view="analisis">Análisis</a>
+      <a href="#guia" data-view="guia">Guía</a>
+    </nav>
+    <div class="sync" id="sync" data-s="local"><i></i><span id="syncText">Guardado en este navegador</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- DIAL-IN -->
+  <section id="view-dial-in" data-view-panel="dial-in">
+    <div class="view-head">
+      <div>
+        <h1>Dial-in</h1>
+        <p>Anota el café, tira el shot con el cronómetro y cata. Cafetea calcula ratio, extracción y el siguiente ajuste.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btnLoadLast" type="button">Partir del último shot</button>
+    </div>
+
+    <div class="dial">
+      <div class="stack">
+        <div class="panel">
+          <div class="panel-h"><h2>Café</h2><span id="restInfo"></span></div>
+          <div class="grid">
+            <div class="field"><label for="roaster">Tostador</label><div class="control"><input id="roaster" type="text" value="Nomad" autocomplete="off"></div></div>
+            <div class="field"><label for="coffee">Origen / finca</label><div class="control"><input id="coffee" type="text" value="Etiopía Guji" autocomplete="off"></div></div>
+            <div class="field"><label for="process">Proceso</label><div class="control">
+              <select id="process"><option>Lavado</option><option>Natural</option><option>Honey</option><option>Anaeróbico</option><option>Otro</option></select></div></div>
+            <div class="field"><label for="roast">Tueste</label><div class="control">
+              <select id="roast"><option>Claro</option><option selected>Medio</option><option>Medio-oscuro</option><option>Oscuro</option></select></div></div>
+            <div class="field"><label for="roastDate">Fecha de tueste</label><div class="control"><input id="roastDate" type="date"></div></div>
+            <div class="field"><label for="notesExpected">Notas del tostador</label><div class="control"><input id="notesExpected" type="text" value="Jazmín, bergamota, miel" autocomplete="off"></div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h2>Receta</h2><span>Cambia ratio o bebida: el otro se recalcula</span></div>
+          <div class="grid">
+            <div class="field"><label for="dose">Dosis</label><div class="control"><input id="dose" type="number" step="0.1" min="5" max="30" value="18"><span class="unit">g</span></div></div>
+            <div class="field"><label for="ratio">Ratio 1:X</label><div class="control"><input id="ratio" type="number" step="0.05" min="0.8" max="6" value="2"><span class="unit">×</span></div></div>
+            <div class="field"><label for="yield">Bebida</label><div class="control"><input id="yield" type="number" step="0.1" min="5" max="150" value="36"><span class="unit">g</span></div></div>
+            <div class="field"><label for="temp">Temperatura</label><div class="control"><input id="temp" type="number" step="0.5" min="85" max="99" value="93"><span class="unit">°C</span></div></div>
+            <div class="field"><label for="grind">Molienda</label><div class="control"><input id="grind" type="number" step="0.5" min="0" max="100" value="10"><span class="unit">pos</span></div></div>
+            <div class="field"><label for="tds">TDS (opcional)</label><div class="control"><input id="tds" type="number" step="0.01" min="0" max="20" placeholder="9,50"><span class="unit">%</span></div></div>
+            <div class="field span-2">
+              <label for="time">Tiempo de extracción</label>
+              <div class="time-row">
+                <div class="control"><input id="time" type="number" step="0.5" min="0" max="120" value="28"><span class="unit">s</span></div>
+                <div class="timer" aria-label="Cronómetro de shot">
+                  <span class="t" id="timerOut">0,0<small>s</small></span>
+                  <div class="btns">
+                    <button class="tbtn go" id="timerGo" type="button" data-run="0">Iniciar</button>
+                    <button class="tbtn" id="timerReset" type="button">Reiniciar</button>
+                  </div>
+                </div>
+              </div>
+              <span class="hint">Al parar el cronómetro, el tiempo pasa al campo.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h2>Cata</h2><span>¿Cómo sabe en taza?</span></div>
+          <div class="seg" role="radiogroup" aria-label="Perfil obtenido">
+            <input type="radio" name="profile" id="prof-sub" value="sub">
+            <label for="prof-sub"><b><span class="shape" data-shape="sub"></span>Ácido, agrio</b><span>Sub-extraído</span></label>
+            <input type="radio" name="profile" id="prof-bal" value="bal" checked>
+            <label for="prof-bal"><b><span class="shape" data-shape="bal"></span>Equilibrado</b><span>Dulce y complejo</span></label>
+            <input type="radio" name="profile" id="prof-over" value="over">
+            <label for="prof-over"><b><span class="shape" data-shape="over"></span>Amargo, seco</b><span>Sobre-extraído</span></label>
+          </div>
+          <div class="sens" style="margin-top:18px;">
+            <div class="sens-row"><label for="sweet">Dulzor</label><input id="sweet" type="range" min="1" max="5" step="1" value="4"><output for="sweet" id="o-sweet">4</output></div>
+            <div class="sens-row"><label for="acid">Acidez</label><input id="acid" type="range" min="1" max="5" step="1" value="3"><output for="acid" id="o-acid">3</output></div>
+            <div class="sens-row"><label for="body">Cuerpo</label><input id="body" type="range" min="1" max="5" step="1" value="3"><output for="body" id="o-body">3</output></div>
+            <div class="sens-row"><label for="bitter">Amargor</label><input id="bitter" type="range" min="1" max="5" step="1" value="2"><output for="bitter" id="o-bitter">2</output></div>
+            <div class="sens-row"><label for="rating">Valoración</label><input id="rating" type="range" min="1" max="10" step="0.5" value="7.5"><output for="rating" id="o-rating">7,5</output></div>
+          </div>
+          <div class="field" style="margin-top:16px;">
+            <label for="notes">Notas de cata</label>
+            <textarea id="notes" rows="2" placeholder="Crema avellana, acidez de mandarina, final limpio…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <aside class="readout" aria-label="Lectura del shot">
+        <div class="scale">
+          <div class="scale-top"><span>Ratio de bebida</span><span class="cat" id="rCat">NORMALE</span></div>
+          <div class="big"><small>1:</small><span id="rRatio">2,00</span></div>
+          <div class="sub-big" id="rLine">18,0 g de café → 36,0 g en taza</div>
+          <div class="cells">
+            <div class="cell"><span>Tiempo</span><b id="rTime">28<small>s</small></b></div>
+            <div class="cell"><span>Caudal</span><b id="rFlow">1,29<small>g/s</small></b></div>
+            <div class="cell"><span>Extracción</span><b id="rEy">—</b></div>
+          </div>
+          <div class="gauge" aria-hidden="true">
+            <div class="gauge-bar"><i data-z="Ristretto"></i><i data-z="Normale"></i><i data-z="Lungo"></i><span class="gauge-mark" id="gMark"></span></div>
+            <div class="gauge-lbl"><span>Ristretto</span><span>Normale</span><span style="text-align:right">Lungo</span></div>
+          </div>
+        </div>
+
+        <div class="diag" id="diag" aria-live="polite"></div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnSave" type="button">Guardar shot</button>
+          <button class="btn btn-ghost" id="btnNew" type="button" title="Limpiar cata y tiempo">Nuevo</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- DIARIO -->
+  <section id="view-diario" data-view-panel="diario" hidden>
+    <div class="view-head">
+      <div><h1>Diario</h1><p>Todos tus shots, del más reciente al más antiguo. Pulsa Repetir para cargar una receta en Dial-in.</p></div>
+      <span class="hint" id="logCount"></span>
+    </div>
+    <div class="toolbar">
+      <div class="control"><input id="search" type="search" placeholder="Buscar tostador, origen o notas" autocomplete="off"></div>
+      <div class="chips" id="profFilter">
+        <button class="chip" type="button" data-p="all" aria-pressed="true">Todos</button>
+        <button class="chip" type="button" data-p="sub" aria-pressed="false"><span class="shape" data-shape="sub"></span>Ácido</button>
+        <button class="chip" type="button" data-p="bal" aria-pressed="false"><span class="shape" data-shape="bal"></span>Equilibrado</button>
+        <button class="chip" type="button" data-p="over" aria-pressed="false"><span class="shape" data-shape="over"></span>Amargo</button>
+      </div>
+    </div>
+    <div class="log" id="log"></div>
+  </section>
+
+  <!-- ANÁLISIS -->
+  <section id="view-analisis" data-view-panel="analisis" hidden>
+    <div class="view-head">
+      <div><h1>Análisis</h1><p>Dónde caen tus shots equilibrados según tiempo, ratio y extracción.</p></div>
+      <div class="field" style="min-width:220px;"><label for="coffeeFilter">Café</label><div class="control"><select id="coffeeFilter"></select></div></div>
+    </div>
+    <div class="banner" id="sampleBanner" hidden>
+      <span><b>Datos de ejemplo.</b> Aún no tienes shots guardados; estos gráficos muestran 26 shots ficticios para que veas cómo funciona.</span>
+      <a class="btn btn-ghost btn-sm" href="#dial-in">Registrar mi primer shot</a>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="charts">
+      <div class="chart-card">
+        <h3>Perfil según tiempo y ratio</h3>
+        <p class="desc">Cada punto es un shot. El recuadro marca la ventana clásica de espresso: 25–32 s y 1:1,8–1:2,4.</p>
+        <div class="legend" data-legend></div>
+        <div class="chart" id="chScatter"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Carta de control de extracción</h3>
+        <p class="desc">TDS frente a % de extracción (shots con refractómetro). Las diagonales son ratios constantes.</p>
+        <div class="legend" data-legend></div>
+        <div class="chart" id="chControl"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Perfil por franja de tiempo</h3>
+        <p class="desc">Reparto de resultados en cata según la duración del shot.</p>
+        <div class="legend" data-legend></div>
+        <div class="chart" id="chBuckets"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Valoración por shot</h3>
+        <p class="desc">Evolución de tu nota (1–10) en orden cronológico.</p>
+        <div class="chart" id="chRating"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUÍA -->
+  <section id="view-guia" data-view-panel="guia" hidden>
+    <div class="view-head">
+      <div><h1>Guía técnica</h1><p>Rangos de referencia para espresso. Son puntos de partida: el café y tu paladar mandan.</p></div>
+    </div>
+    <div class="guide">
+      <div class="panel">
+        <h2>Estilos y ratios</h2>
+        <p>El ratio relaciona gramos de café seco con gramos de bebida en taza. Pesa siempre la bebida; el volumen engaña por la crema.</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Estilo</th><th>Ratio</th><th>Tiempo</th><th>Carácter</th></tr></thead>
+          <tbody>
+            <tr><td>Ristretto</td><td class="num">1:1 – 1:1,5</td><td class="num">15–22 s</td><td>Denso, intenso, más dulzor y cuerpo</td></tr>
+            <tr><td>Normale</td><td class="num">1:1,6 – 1:2,4</td><td class="num">25–32 s</td><td>Equilibrio entre cuerpo y claridad</td></tr>
+            <tr><td>Lungo</td><td class="num">1:2,5 – 1:4</td><td class="num">32–45 s</td><td>Más ligero, más claridad, riesgo de amargor</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Extracción y TDS</h2>
+        <p>Con un refractómetro mides los sólidos disueltos (TDS). Con la dosis y la bebida obtienes cuánto del café has extraído.</p>
+        <div class="formula">EY % = TDS % × bebida (g) ÷ dosis (g)</div>
+        <ul class="clean">
+          <li><strong>Extracción objetivo:</strong> 18–22 % en la mayoría de espressos modernos.</li>
+          <li><strong>TDS habitual:</strong> 8–12 % según ratio y estilo.</li>
+          <li><strong>Mismo EY, más ratio:</strong> menos TDS, taza más ligera. Por eso las diagonales de la carta de control son ratios constantes.</li>
+        </ul>
+      </div>
+
+      <div class="panel wide">
+        <h2>Diagnóstico en taza</h2>
+        <p>Cambia una sola variable cada vez y vuelve a catar. La molienda es la palanca principal; el ratio y la temperatura afinan.</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Síntoma</th><th>Causa probable</th><th>Primer ajuste</th><th>Después</th></tr></thead>
+          <tbody>
+            <tr><td>Agrio, salado, final corto</td><td>Sub-extracción: el agua pasa demasiado rápido o hay poca agua</td><td>Moler más fino</td><td>Subir ratio hacia 1:2,2 o +1–2 °C</td></tr>
+            <tr><td>Amargo, seco, astringente</td><td>Sobre-extracción: contacto excesivo o demasiada agua</td><td>Moler más grueso</td><td>Bajar ratio o −1–2 °C</td></tr>
+            <tr><td>Ácido y amargo a la vez</td><td>Canalización: el agua encuentra caminos fáciles</td><td>Mejorar distribución (WDT) y tampeo nivelado</td><td>Revisar dosis según la cesta</td></tr>
+            <tr><td>Plano, sin dulzor ni aroma</td><td>Café pasado o temperatura baja</td><td>Comprobar días de reposo</td><td>Subir temperatura 1 °C</td></tr>
+            <tr><td>Flujo irregular, burbujas</td><td>Café demasiado fresco, exceso de CO₂</td><td>Dejar reposar unos días más</td><td>Preinfusión más larga</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Reposo del grano</h2>
+        <p>Tras el tueste el café libera CO₂. Para espresso suele rendir mejor tras unos días de reposo. Rangos orientativos:</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Tueste</th><th>Empezar a usar</th><th>Mejor ventana</th></tr></thead>
+          <tbody>
+            <tr><td>Claro</td><td class="num">10 días</td><td class="num">14–30 días</td></tr>
+            <tr><td>Medio</td><td class="num">7 días</td><td class="num">10–25 días</td></tr>
+            <tr><td>Oscuro</td><td class="num">4 días</td><td class="num">5–15 días</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Limpieza y agua</h2>
+        <ul class="clean">
+          <li><strong>Entre shots:</strong> purga del grupo, cesta seca y limpia antes de dosificar.</li>
+          <li><strong>Diario:</strong> retrolavado con agua y filtro ciego; cepillado de la junta y la ducha.</li>
+          <li><strong>Semanal:</strong> retrolavado con detergente (unos 3 g de Cafiza en el filtro ciego), 5 ciclos de 10 s y aclarado con agua.</li>
+          <li><strong>Mensual:</strong> cestas y portafiltro en remojo con detergente; revisar junta y ducha.</li>
+          <li><strong>Agua:</strong> la SCA recomienda una dureza total de 50–175 ppm CaCO₃ y una alcalinidad cercana a 40 ppm.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const PROF = {
+    sub:  { name: 'Ácido', long: 'Sub-extraído', color: 'var(--p-sub)' },
+    bal:  { name: 'Equilibrado', long: 'Equilibrado', color: 'var(--p-bal)' },
+    over: { name: 'Amargo', long: 'Sobre-extraído', color: 'var(--p-over)' }
+  };
+  const ORDER = ['sub', 'bal', 'over'];
+
+  // ---------- utilidades ----------
+  const fmt = (n, d = 1) => (n == null || isNaN(n)) ? '—' : Number(n).toFixed(d).replace('.', ',');
+  const num = (id) => { const v = parseFloat($(id).value); return isNaN(v) ? null : v; };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const category = (r) => r == null ? '—' : r < 1.6 ? 'Ristretto' : r <= 2.4 ? 'Normale' : 'Lungo';
+  const dayMs = 86400000;
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }); } catch (e) { return ''; } };
+  const coffeeKey = (s) => `${s.roaster || 'Sin tostador'} · ${s.coffee || 'Sin origen'}`;
+  function shapeSvg(p, cx, cy, r, extra = '') {
+    const fill = PROF[p] ? PROF[p].color : 'var(--muted)';
+    if (p === 'sub') { const h = r * 1.15; return `<path d="M${cx} ${cy - h}L${cx + h} ${cy + h * 0.8}L${cx - h} ${cy + h * 0.8}Z" fill="${fill}" ${extra}/>`; }
+    if (p === 'over') { const s = r * 0.9; return `<rect x="${cx - s}" y="${cy - s}" width="${s * 2}" height="${s * 2}" rx="1.5" fill="${fill}" ${extra}/>`; }
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ${extra}/>`;
+  }
+  function paintShapes(root = document) {
+    root.querySelectorAll('.shape[data-shape]').forEach(el => {
+      el.innerHTML = `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">${shapeSvg(el.dataset.shape, 6, 6.4, 4.6)}</svg>`;
+    });
+  }
+  let toastT;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2400); }
+
+  // ---------- almacenamiento ----------
+  const LS_KEY = 'cafetea_shots';
+  const store = { mode: 'local', shots: [], col: null };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function legacyShots() {
+    const raw = lsGet('barista_history'); if (!raw) return [];
+    let arr; try { arr = JSON.parse(raw); } catch (e) { return []; }
+    const map = { 'Balanceado': 'bal', 'Sub-extraido': 'sub', 'Sobre-extraido': 'over' };
+    return (Array.isArray(arr) ? arr : []).map(o => {
+      const dose = parseFloat(o.dose) || null, ratio = parseFloat(o.ratio) || null;
+      return {
+        id: 'legacy-' + (o.id || Math.random().toString(36).slice(2)),
+        createdAt: new Date(Number(o.id) || Date.now()).toISOString(),
+        roaster: o.brand && o.brand !== 'Sin especificación' ? o.brand : '',
+        coffee: o.origin && o.origin !== '-' ? o.origin : '',
+        process: '', roast: '', roastDate: '', notesExpected: '',
+        dose, ratio, yield: parseFloat(o.yield) || (dose && ratio ? +(dose * ratio).toFixed(1) : null),
+        temp: null, grind: parseFloat(o.grind) || null, time: parseFloat(o.time) || null,
+        tds: null, ey: null, category: category(ratio), profile: map[o.flavorProfile] || 'bal',
+        sweet: null, acid: null, body: null, bitter: null, rating: null,
+        notes: o.notes && o.notes !== '-' ? o.notes : ''
+      };
+    });
+  }
+  function loadLocal() {
+    let shots = [];
+    const raw = lsGet(LS_KEY);
+    if (raw) { try { shots = JSON.parse(raw) || []; } catch (e) { shots = []; } }
+    else {
+      shots = legacyShots();
+      if (shots.length) lsSet(LS_KEY, JSON.stringify(shots));
+    }
+    return shots;
+  }
+  const sortShots = (a) => a.slice().sort((x, y) => (y.createdAt || '').localeCompare(x.createdAt || ''));
+  function setSync(s, text) { $('sync').dataset.s = s; $('syncText').textContent = text; }
+
+  async function saveShot(shot) {
+    if (store.mode === 'db' && store.col) {
+      try { await store.col.doc(shot.id).set(shot); return true; }
+      catch (e) {
+        if (e && e.code === 'quota_exceeded') toast('El diario está lleno. Borra shots antiguos para guardar más.');
+        else toast('No se pudo guardar. Inténtalo de nuevo.');
+        return false;
+      }
+    }
+    store.shots = sortShots([shot, ...store.shots]);
+    lsSet(LS_KEY, JSON.stringify(store.shots));
+    renderAll();
+    return true;
+  }
+  async function deleteShot(id) {
+    if (store.mode === 'db' && store.col) {
+      try { await store.col.doc(id).delete(); } catch (e) { toast('No se pudo borrar. Inténtalo de nuevo.'); }
+      return;
+    }
+    store.shots = store.shots.filter(s => s.id !== id);
+    lsSet(LS_KEY, JSON.stringify(store.shots));
+    renderAll();
+  }
+
+  async function connectDb() {
+    const c = window.claude;
+    if (!c || typeof c.use !== 'function') return;
+    let user, db;
+    try { [user, db] = await Promise.all([c.use('user'), c.use('db')]); } catch (e) { return; }
+    if (!db || !user) return;
+    let uid = null;
+    try { uid = await user.id(); } catch (e) { uid = null; }
+    if (!uid) return;
+    let col;
+    try { col = db.collection('data/users/' + uid); } catch (e) { return; }
+    setSync('wait', 'Sincronizando…');
+    const timer = setTimeout(() => setSync('wait', 'Sin conexión con tu diario'), 10000);
+    let first = true;
+    col.onSnapshot(async (snap) => {
+      if (!snap.metadata.fromCache) clearTimeout(timer);
+      store.mode = 'db'; store.col = col;
+      store.shots = sortShots(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+      setSync(snap.metadata.fromCache ? 'wait' : 'db', snap.metadata.fromCache ? 'Sincronizando…' : 'Guardado en tu cuenta');
+      renderAll();
+      if (first && !snap.metadata.fromCache) {
+        first = false;
+        const flag = 'cafetea_migrated_' + uid;
+        const local = loadLocal();
+        if (!lsGet(flag) && local.length) {
+          const have = new Set(store.shots.map(s => s.id));
+          for (const s of local) { if (!have.has(s.id)) { try { await col.doc(s.id).set(s); } catch (e) { return; } } }
+          lsSet(flag, '1');
+          toast(`${local.length} shots importados a tu cuenta`);
+        } else if (!lsGet(flag)) lsSet(flag, '1');
+      }
+    }, () => {
+      clearTimeout(timer);
+      setSync('local', 'Guardado en este navegador');
+    });
+  }
+
+  // ---------- datos de ejemplo (solo visualización, nunca se guardan) ----------
+  function makeSamples() {
+    let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    const coffees = [
+      { roaster: 'Nomad', coffee: 'Etiopía Guji', process: 'Lavado', roast: 'Claro', dose: 18 },
+      { roaster: 'Syra', coffee: 'Colombia Huila', process: 'Natural', roast: 'Medio', dose: 18.5 }
+    ];
+    const out = []; const now = Date.now(); const N = 26;
+    for (let i = 0; i < N; i++) {
+      const c = coffees[i % 2]; const learn = i / (N - 1);
+      const ratio = +(1.55 + rnd() * (1.4 - learn * 0.6)).toFixed(2);
+      const time = Math.round(clamp(16 + rnd() * 24 + (learn - 0.5) * 3, 14, 42));
+      const ey = +(14.8 + (time - 17) * 0.27 + (ratio - 1.55) * 1.7 + (rnd() - 0.5) * 1.3).toFixed(1);
+      const profile = ey < 18.2 ? 'sub' : ey > 22.3 ? 'over' : 'bal';
+      const created = now - (N - i) * 1.3 * dayMs;
+      const yld = +(c.dose * ratio).toFixed(1);
+      const hasTds = rnd() > 0.25;
+      out.push({
+        id: 'sample-' + i, sample: true, createdAt: new Date(created).toISOString(),
+        roaster: c.roaster, coffee: c.coffee, process: c.process, roast: c.roast,
+        roastDate: new Date(created - (9 + i * 0.4) * dayMs).toISOString().slice(0, 10), notesExpected: '',
+        dose: c.dose, ratio, yield: yld, temp: 93, grind: 10, time,
+        tds: hasTds ? +(ey / ratio).toFixed(2) : null, ey: hasTds ? ey : null,
+        category: category(ratio), profile,
+        rating: profile === 'bal' ? +(7 + rnd() * 2 + learn * 0.5).toFixed(1) : +(4 + rnd() * 2).toFixed(1),
+        notes: ''
+      });
+    }
+    return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+  const SAMPLES = makeSamples();
+
+  // ---------- formulario ----------
+  function profileVal() { const el = document.querySelector('input[name="profile"]:checked'); return el ? el.value : 'bal'; }
+  function readForm() {
+    const dose = num('dose'), ratio = num('ratio'), yld = num('yield'), time = num('time'), tds = num('tds');
+    const ey = (tds && dose && yld) ? +(tds * yld / dose).toFixed(1) : null;
+    return {
+      roaster: $('roaster').value.trim(), coffee: $('coffee').value.trim(), process: $('process').value, roast: $('roast').value,
+      roastDate: $('roastDate').value, notesExpected: $('notesExpected').value.trim(),
+      dose, ratio, yield: yld, temp: num('temp'), grind: num('grind'), time, tds: tds || null, ey,
+      category: category(ratio), profile: profileVal(),
+      sweet: num('sweet'), acid: num('acid'), body: num('body'), bitter: num('bitter'), rating: num('rating'),
+      notes: $('notes').value.trim()
+    };
+  }
+  function fillForm(s) {
+    const set = (id, v) => { if (v != null && v !== '') $(id).value = v; };
+    ['roaster', 'coffee', 'notesExpected'].forEach(k => { $(k).value = s[k] || ''; });
+    set('process', s.process); set('roast', s.roast); $('roastDate').value = s.roastDate || '';
+    set('dose', s.dose); set('ratio', s.ratio); set('yield', s.yield); set('temp', s.temp); set('grind', s.grind); set('time', s.time);
+    $('tds').value = s.tds || '';
+    updateReadout();
+  }
+  function restDays() {
+    const v = $('roastDate').value; if (!v) return null;
+    const d = new Date(v + 'T12:00:00'); if (isNaN(d)) return null;
+    return Math.floor((Date.now() - d.getTime()) / dayMs);
+  }
+  function restWindow(roast) {
+    if (roast === 'Claro') return [10, 30];
+    if (roast === 'Oscuro' || roast === 'Medio-oscuro') return [4, 15];
+    return [7, 25];
+  }
+
+  function diagnose(f, days) {
+    const p = f.profile, t = f.time, r = f.ratio, temp = f.temp, ey = f.ey;
+    const steps = []; let head, pill;
+    if (p === 'sub') {
+      head = 'Falta extracción'; pill = ['bad', 'Sub-extraído'];
+      if (t != null && t < 25) steps.push(`<strong>Muele más fino</strong> (1–2 posiciones): ${fmt(t, 0)} s es un flujo rápido; busca 27–30 s.`);
+      else if (r != null && r < 1.8) steps.push(`<strong>Alarga el shot</strong> hacia 1:2,0–2,2: con 1:${fmt(r, 2)} el agua no llega a extraer lo suficiente.`);
+      else if (temp != null && temp < 94) steps.push(`<strong>Sube la temperatura</strong> a ${fmt(temp + 1, 1)}–${fmt(temp + 2, 1)} °C, sobre todo en tuestes claros.`);
+      else steps.push('<strong>Muele más fino</strong> y mantén el resto igual.');
+      steps.push('Cambia solo esa variable y vuelve a catar.');
+    } else if (p === 'over') {
+      head = 'Exceso de extracción'; pill = ['warn', 'Sobre-extraído'];
+      if (t != null && t > 32) steps.push(`<strong>Muele más grueso</strong> (1–2 posiciones): ${fmt(t, 0)} s es largo para este ratio; busca 27–30 s.`);
+      else if (r != null && r > 2.4) steps.push(`<strong>Corta antes</strong> hacia 1:2,0: con 1:${fmt(r, 2)} entran los compuestos amargos del final.`);
+      else if (temp != null && temp > 91) steps.push(`<strong>Baja la temperatura</strong> a ${fmt(temp - 1, 1)}–${fmt(temp - 2, 1)} °C, sobre todo en tuestes oscuros.`);
+      else steps.push('<strong>Muele más grueso</strong> y mantén el resto igual.');
+      steps.push('Si notas ácido y amargo a la vez, revisa la distribución: puede ser canalización.');
+    } else {
+      head = 'Receta en su punto'; pill = ['good', 'Equilibrado'];
+      steps.push('<strong>Fija estos parámetros</strong> y guárdalos como referencia de este café.');
+      steps.push('Para explorar, mueve solo el ratio ±0,2 y compara dulzor y claridad.');
+    }
+    let note = '';
+    if (ey != null) {
+      const st = ey < 18 ? 'por debajo de' : ey > 22 ? 'por encima de' : 'dentro de';
+      note = `Extracción medida: <b>${fmt(ey, 1)} %</b>, ${st} la ventana 18–22 %.`;
+    }
+    if (days != null) {
+      const [a, b] = restWindow(f.roast);
+      if (days < a) note += `${note ? ' ' : ''}El café lleva ${days} días de reposo; para un tueste ${f.roast.toLowerCase()} conviene esperar al menos ${a}.`;
+      else if (days > b + 15) note += `${note ? ' ' : ''}Lleva ${days} días desde el tueste; puede estar perdiendo aroma.`;
+    }
+    return `<div class="diag-h"><b>${head}</b><span class="pill ${pill[0]}">${pill[1]}</span></div><ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol>${note ? `<p class="note">${note}</p>` : ''}`;
+  }
+
+  function updateReadout() {
+    const f = readForm();
+    $('rRatio').textContent = fmt(f.ratio, 2);
+    $('rLine').textContent = `${fmt(f.dose, 1)} g de café → ${fmt(f.yield, 1)} g en taza`;
+    $('rTime').innerHTML = `${fmt(f.time, f.time % 1 ? 1 : 0)}<small>s</small>`;
+    $('rFlow').innerHTML = (f.time && f.yield) ? `${fmt(f.yield / f.time, 2)}<small>g/s</small>` : '—';
+    $('rEy').innerHTML = f.ey != null ? `${fmt(f.ey, 1)}<small>%</small>` : '<span style="font-size:13px;color:var(--display-muted)">sin TDS</span>';
+    const cat = category(f.ratio);
+    $('rCat').textContent = cat.toUpperCase();
+    document.querySelectorAll('.gauge-bar i').forEach(i => i.classList.toggle('on', i.dataset.z === cat));
+    const pos = f.ratio == null ? 0 : clamp((f.ratio - 1) / 3, 0, 1) * 100;
+    $('gMark').style.left = pos + '%';
+    const days = restDays();
+    $('restInfo').textContent = days == null ? 'Añade la fecha de tueste para ver el reposo' : days < 0 ? 'Fecha de tueste en el futuro' : `${days} días de reposo`;
+    $('diag').innerHTML = diagnose(f, days != null && days >= 0 ? days : null);
+  }
+
+  function bindForm() {
+    $('dose').addEventListener('input', () => { const d = num('dose'), r = num('ratio'); if (d && r) $('yield').value = (d * r).toFixed(1); updateReadout(); });
+    $('ratio').addEventListener('input', () => { const d = num('dose'), r = num('ratio'); if (d && r) $('yield').value = (d * r).toFixed(1); updateReadout(); });
+    $('yield').addEventListener('input', () => { const d = num('dose'), y = num('yield'); if (d && y) $('ratio').value = (y / d).toFixed(2); updateReadout(); });
+    ['time', 'tds', 'temp', 'grind', 'roastDate', 'roast'].forEach(id => $(id).addEventListener('input', updateReadout));
+    document.querySelectorAll('input[name="profile"]').forEach(r => r.addEventListener('change', updateReadout));
+    ['sweet', 'acid', 'body', 'bitter', 'rating'].forEach(id => {
+      const out = $('o-' + id);
+      const sync = () => { out.textContent = id === 'rating' ? fmt(num(id), 1) : $(id).value; };
+      $(id).addEventListener('input', sync); sync();
+    });
+    $('btnSave').addEventListener('click', async () => {
+      const f = readForm();
+      if (!f.dose || !f.yield) { toast('Indica dosis y bebida para guardar el shot.'); return; }
+      const shot = { ...f, id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt: new Date().toISOString() };
+      const btn = $('btnSave'); btn.disabled = true;
+      const ok = await saveShot(shot);
+      btn.disabled = false;
+      if (ok) toast(store.mode === 'db' ? 'Shot guardado en tu diario' : 'Shot guardado en este navegador');
+    });
+    $('btnNew').addEventListener('click', () => {
+      $('notes').value = ''; $('tds').value = ''; $('time').value = '';
+      $('prof-bal').checked = true; resetTimer(); updateReadout(); $('time').focus();
+    });
+    $('btnLoadLast').addEventListener('click', () => {
+      const last = store.shots[0];
+      if (!last) { toast('Todavía no hay shots guardados.'); return; }
+      fillForm(last); toast('Receta del último shot cargada');
+    });
+  }
+
+  // ---------- cronómetro ----------
+  let tStart = 0, tRaf = 0, tRun = false, tVal = 0;
+  function drawTimer() { $('timerOut').innerHTML = `${fmt(tVal, 1)}<small>s</small>`; }
+  function tick() { tVal = (performance.now() - tStart) / 1000; drawTimer(); tRaf = requestAnimationFrame(tick); }
+  function resetTimer() { cancelAnimationFrame(tRaf); tRun = false; tVal = 0; drawTimer(); const b = $('timerGo'); b.dataset.run = '0'; b.textContent = 'Iniciar'; }
+  function bindTimer() {
+    $('timerGo').addEventListener('click', () => {
+      const b = $('timerGo');
+      if (!tRun) { tRun = true; tStart = performance.now() - tVal * 1000; tick(); b.dataset.run = '1'; b.textContent = 'Parar'; }
+      else { tRun = false; cancelAnimationFrame(tRaf); b.dataset.run = '0'; b.textContent = 'Seguir'; $('time').value = tVal.toFixed(1); updateReadout(); }
+    });
+    $('timerReset').addEventListener('click', resetTimer);
+  }
+
+  // ---------- diario ----------
+  let logFilter = 'all', pendingDelete = null;
+  function renderLog() {
+    const q = $('search').value.trim().toLowerCase();
+    const list = store.shots.filter(s => (logFilter === 'all' || s.profile === logFilter) &&
+      (!q || [s.roaster, s.coffee, s.notes, s.process].join(' ').toLowerCase().includes(q)));
+    $('logCount').textContent = store.shots.length ? `${list.length} de ${store.shots.length} shots` : '';
+    const el = $('log');
+    if (!store.shots.length) {
+      el.innerHTML = `<div class="empty"><b>Tu diario está vacío</b><span>Guarda tu primer shot en Dial-in y aparecerá aquí.</span><a class="btn btn-ghost btn-sm" href="#dial-in">Ir a Dial-in</a></div>`;
+      return;
+    }
+    if (!list.length) { el.innerHTML = `<div class="empty"><b>Sin resultados</b><span>Prueba con otra búsqueda o quita el filtro.</span></div>`; return; }
+    el.innerHTML = `<div class="log-head"><span>Fecha</span><span>Café</span><span>Receta</span><span style="text-align:right">Tiempo</span><span style="text-align:right">EY</span><span>Perfil</span><span style="text-align:right">Nota</span><span></span></div>` +
+      list.map(s => {
+        const p = PROF[s.profile] || PROF.bal;
+        const del = pendingDelete === s.id
+          ? `<button class="btn btn-ghost btn-sm" data-act="del-yes" data-id="${esc(s.id)}" style="color:var(--bad);border-color:var(--bad)">Borrar</button><button class="btn btn-ghost btn-sm" data-act="del-no">Cancelar</button>`
+          : `<button class="btn btn-ghost btn-sm" data-act="repeat" data-id="${esc(s.id)}">Repetir</button><button class="btn btn-ghost btn-sm" data-act="del" data-id="${esc(s.id)}" aria-label="Borrar shot">Borrar</button>`;
+        return `<div class="log-row">
+          <span class="date">${esc(fmtDate(s.createdAt))}</span>
+          <div class="coffee"><b>${esc(s.coffee || 'Sin origen')}</b><span>${esc([s.roaster, s.process, s.roast].filter(Boolean).join(' · ') || '—')}${s.notes ? ' — ' + esc(s.notes) : ''}</span></div>
+          <div class="rec">${fmt(s.dose, 1)} g → ${fmt(s.yield, 1)} g <small>1:${fmt(s.ratio, 2)} · ${esc(s.category || category(s.ratio))}${s.temp ? ' · ' + fmt(s.temp, 1) + ' °C' : ''}${s.grind != null ? ' · mol. ' + fmt(s.grind, s.grind % 1 ? 1 : 0) : ''}</small></div>
+          <span class="r">${s.time != null ? fmt(s.time, s.time % 1 ? 1 : 0) + ' s' : '—'}</span>
+          <span class="r">${s.ey != null ? fmt(s.ey, 1) + ' %' : '—'}</span>
+          <span class="ptag"><span class="shape" data-shape="${esc(s.profile)}"></span>${esc(p.name)}</span>
+          <span class="r rating">${s.rating != null ? fmt(s.rating, 1) : '—'}</span>
+          <span class="meta"><span>${esc(fmtDate(s.createdAt))}</span><span>${s.time != null ? fmt(s.time, 0) + ' s' : ''}</span>${s.ey != null ? `<span>EY ${fmt(s.ey, 1)} %</span>` : ''}${s.rating != null ? `<span>Nota ${fmt(s.rating, 1)}</span>` : ''}</span>
+          <div class="ops">${del}</div>
+        </div>`;
+      }).join('');
+    paintShapes(el);
+  }
+  function bindLog() {
+    $('search').addEventListener('input', renderLog);
+    $('profFilter').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-p]'); if (!b) return;
+      logFilter = b.dataset.p;
+      $('profFilter').querySelectorAll('[data-p]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      renderLog();
+    });
+    $('log').addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      const id = b.dataset.id, act = b.dataset.act;
+      if (act === 'repeat') { const s = store.shots.find(x => x.id === id); if (s) { fillForm(s); location.hash = 'dial-in'; toast('Receta cargada en Dial-in'); } }
+      else if (act === 'del') { pendingDelete = id; renderLog(); }
+      else if (act === 'del-no') { pendingDelete = null; renderLog(); }
+      else if (act === 'del-yes') { pendingDelete = null; await deleteShot(id); toast('Shot borrado'); }
+    });
+  }
+
+  // ---------- análisis ----------
+  function analysisData() {
+    const useSample = store.shots.length === 0;
+    $('sampleBanner').hidden = !useSample;
+    const all = useSample ? SAMPLES : store.shots;
+    const sel = $('coffeeFilter');
+    const keys = [...new Set(all.map(coffeeKey))];
+    const prev = sel.value;
+    sel.innerHTML = `<option value="">Todos los cafés</option>` + keys.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+    sel.value = keys.includes(prev) ? prev : '';
+    return sel.value ? all.filter(s => coffeeKey(s) === sel.value) : all;
+  }
+  function legendHtml() {
+    return ORDER.map(p => `<span><span class="shape" data-shape="${p}"></span>${PROF[p].long}</span>`).join('');
+  }
+  function renderKpis(d) {
+    const bal = d.filter(s => s.profile === 'bal');
+    const pct = d.length ? Math.round(bal.length / d.length * 100) : 0;
+    const times = bal.map(s => s.time).filter(v => v != null).sort((a, b) => a - b);
+    const ratios = bal.map(s => s.ratio).filter(v => v != null);
+    const avgR = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : null;
+    const q = (arr, p) => arr.length ? arr[Math.min(arr.length - 1, Math.floor(p * (arr.length - 1) + 0.5))] : null;
+    const tLo = q(times, 0.2), tHi = q(times, 0.8);
+    const eys = bal.map(s => s.ey).filter(v => v != null);
+    const avgEy = eys.length ? eys.reduce((a, b) => a + b, 0) / eys.length : null;
+    $('kpis').innerHTML = `
+      <div class="kpi"><span>Shots</span><b>${d.length}</b><em>${bal.length} equilibrados</em></div>
+      <div class="kpi"><span>Acierto</span><b>${pct}<small>%</small></b><em>shots equilibrados</em></div>
+      <div class="kpi"><span>Tu ventana de tiempo</span><b>${tLo != null ? `${fmt(tLo, 0)}–${fmt(tHi, 0)}<small>s</small>` : '—'}</b><em>donde caen tus equilibrados</em></div>
+      <div class="kpi"><span>Ratio de referencia</span><b>${avgR != null ? `<small>1:</small>${fmt(avgR, 2)}` : '—'}</b><em>${avgEy != null ? `EY media ${fmt(avgEy, 1)} %` : 'media de equilibrados'}</em></div>`;
+  }
+
+  function axisGrid(W, H, m, xt, yt, x, y, xfmt, yfmt, xl, yl) {
+    let s = '';
+    yt.forEach(v => { s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" stroke-width="1"/><text class="tick" x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${yfmt(v)}</text>`; });
+    xt.forEach(v => { s += `<text class="tick" x="${x(v)}" y="${H - m.b + 16}" text-anchor="middle">${xfmt(v)}</text>`; });
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--axis)" stroke-width="1"/>`;
+    if (xl) s += `<text class="axis-t" x="${(m.l + W - m.r) / 2}" y="${H - 4}" text-anchor="middle">${xl}</text>`;
+    if (yl) s += `<text class="axis-t" transform="translate(12 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">${yl}</text>`;
+    return s;
+  }
+  function tipHtml(s) {
+    const p = PROF[s.profile] || PROF.bal;
+    return `<b>${esc(s.coffee || 'Shot')}</b><span class="num">${fmt(s.dose, 1)} → ${fmt(s.yield, 1)} g · 1:${fmt(s.ratio, 2)}<br>${s.time != null ? fmt(s.time, 0) + ' s' : '—'}${s.ey != null ? ` · EY ${fmt(s.ey, 1)} % · TDS ${fmt(s.tds, 2)} %` : ''}</span><br>${esc(p.long)}${s.rating != null ? ` · nota ${fmt(s.rating, 1)}` : ''}<br><span style="opacity:.75">${esc(fmtDate(s.createdAt))}</span>`;
+  }
+  function attachTips(el, items, html) {
+    let tip = el.querySelector('.tip');
+    if (!tip) { tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; el.appendChild(tip); }
+    const show = (e) => {
+      const t = e.target.closest('[data-i]'); if (!t) return;
+      const i = +t.dataset.i; tip.innerHTML = html(items[i], i); tip.hidden = false;
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX || r.left) - r.left, py = (e.clientY || r.top) - r.top;
+      const w = tip.offsetWidth, h = tip.offsetHeight;
+      tip.style.left = clamp(px + 12 + w > r.width ? px - w - 12 : px + 12, 0, Math.max(0, r.width - w)) + 'px';
+      tip.style.top = clamp(py - h - 10, 0, Math.max(0, r.height - h)) + 'px';
+    };
+    el.onpointermove = show; el.onpointerdown = show;
+    el.onpointerleave = () => { tip.hidden = true; };
+  }
+
+  function renderScatter(d) {
+    const el = $('chScatter'); const W = Math.max(300, el.clientWidth), H = 300, m = { t: 14, r: 14, b: 44, l: 46 };
+    const pts = d.filter(s => s.time != null && s.ratio != null);
+    if (!pts.length) { el.innerHTML = `<div class="chart-empty">Guarda shots con tiempo y ratio para ver el mapa.</div>`; return; }
+    const tMax = Math.max(45, Math.ceil(Math.max(...pts.map(s => s.time)) / 5) * 5);
+    const rMax = Math.max(3.5, Math.ceil(Math.max(...pts.map(s => s.ratio)) * 2) / 2);
+    const x = lin(10, tMax, m.l, W - m.r), y = lin(1, rMax, H - m.b, m.t);
+    const xt = []; for (let v = 10; v <= tMax; v += 5) xt.push(v);
+    const yt = []; for (let v = 1; v <= rMax + 1e-9; v += 0.5) yt.push(+v.toFixed(1));
+    let s = `<svg viewBox="0 0 ${W} ${H}" aria-label="Dispersión de ${pts.length} shots: tiempo frente a ratio, por perfil de cata">`;
+    s += axisGrid(W, H, m, xt, yt, x, y, v => v, v => '1:' + fmt(v, 1), 'Tiempo (s)', 'Ratio');
+    s += `<rect x="${x(25)}" y="${y(2.4)}" width="${x(32) - x(25)}" height="${y(1.8) - y(2.4)}" fill="var(--zone)" stroke="var(--zone-line)" stroke-dasharray="4 3" rx="3"/>`;
+    s += `<text class="zone-t" x="${x(25) + 6}" y="${y(2.4) - 6}">Ventana ideal</text>`;
+    pts.forEach((p, i) => {
+      const cx = x(clamp(p.time, 10, tMax)), cy = y(clamp(p.ratio, 1, rMax));
+      s += `<g data-i="${i}" style="cursor:default"><circle cx="${cx}" cy="${cy}" r="12" fill="transparent"/>${shapeSvg(p.profile, cx, cy, 5.5, 'stroke="var(--surface)" stroke-width="2"')}</g>`;
+    });
+    s += `</svg>`; el.innerHTML = s; attachTips(el, pts, tipHtml);
+  }
+
+  function renderControl(d) {
+    const el = $('chControl'); const W = Math.max(300, el.clientWidth), H = 300, m = { t: 14, r: 34, b: 44, l: 46 };
+    const pts = d.filter(s => s.tds != null && s.ey != null);
+    if (!pts.length) { el.innerHTML = `<div class="chart-empty">Añade el TDS del refractómetro al guardar un shot para situarlo en la carta de control.</div>`; return; }
+    const x0 = 14, x1 = 26, y0 = 5, y1 = 15;
+    const x = lin(x0, x1, m.l, W - m.r), y = lin(y0, y1, H - m.b, m.t);
+    const xt = [14, 16, 18, 20, 22, 24, 26], yt = [5, 7, 9, 11, 13, 15];
+    let s = `<svg viewBox="0 0 ${W} ${H}" aria-label="Carta de control: TDS frente a extracción de ${pts.length} shots">`;
+    s += `<defs><clipPath id="clipCtl"><rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/></clipPath></defs>`;
+    s += axisGrid(W, H, m, xt, yt, x, y, v => v + '%', v => v + '%', 'Extracción (EY %)', 'TDS');
+    s += `<rect x="${x(18)}" y="${y(12)}" width="${x(22) - x(18)}" height="${y(8) - y(12)}" fill="var(--zone)" stroke="var(--zone-line)" stroke-dasharray="4 3" rx="3"/>`;
+    s += `<text class="zone-t" x="${x(18) + 6}" y="${y(12) - 6}">Objetivo</text>`;
+    [1.5, 2, 2.5, 3].forEach(r => {
+      // TDS = EY / r
+      s += `<line clip-path="url(#clipCtl)" x1="${x(x0)}" y1="${y(x0 / r)}" x2="${x(x1)}" y2="${y(x1 / r)}" stroke="var(--axis)" stroke-dasharray="2 4" stroke-width="1"/>`;
+      const ty = x1 / r;
+      if (ty >= y0 && ty <= y1) s += `<text class="iso-t" x="${x(x1) + 4}" y="${y(ty) + 3}">1:${fmt(r, 1).replace(',0', '')}</text>`;
+    });
+    pts.forEach((p, i) => {
+      const cx = x(clamp(p.ey, x0, x1)), cy = y(clamp(p.tds, y0, y1));
+      s += `<g data-i="${i}"><circle cx="${cx}" cy="${cy}" r="12" fill="transparent"/>${shapeSvg(p.profile, cx, cy, 5.5, 'stroke="var(--surface)" stroke-width="2"')}</g>`;
+    });
+    s += `</svg>`; el.innerHTML = s; attachTips(el, pts, tipHtml);
+  }
+
+  function renderBuckets(d) {
+    const el = $('chBuckets');
+    const B = [{ l: '< 20 s', a: -1, b: 20 }, { l: '20–25 s', a: 20, b: 25 }, { l: '25–30 s', a: 25, b: 30 }, { l: '30–35 s', a: 30, b: 35 }, { l: '> 35 s', a: 35, b: 1e9 }];
+    const pts = d.filter(s => s.time != null);
+    if (!pts.length) { el.innerHTML = `<div class="chart-empty">Guarda shots con tiempo para ver el reparto.</div>`; return; }
+    const rows = B.map(b => { const inB = pts.filter(s => s.time >= b.a && s.time < b.b); const c = {}; ORDER.forEach(p => c[p] = inB.filter(s => s.profile === p).length); return { ...b, n: inB.length, c }; });
+    const W = Math.max(300, el.clientWidth), rowH = 40, m = { t: 6, r: 44, b: 6, l: 70 }, H = m.t + m.b + rows.length * rowH;
+    const x = lin(0, 1, m.l, W - m.r);
+    let s = `<svg viewBox="0 0 ${W} ${H}" aria-label="Reparto del perfil de cata por franja de tiempo">`;
+    const items = [];
+    rows.forEach((r, ri) => {
+      const yy = m.t + ri * rowH + 8, h = rowH - 16;
+      s += `<text class="tick" x="${m.l - 10}" y="${yy + h / 2 + 4}" text-anchor="end">${r.l}</text>`;
+      if (!r.n) { s += `<rect x="${x(0)}" y="${yy}" width="${x(1) - x(0)}" height="${h}" fill="var(--grid)" rx="4"/><text class="lbl-out" x="${x(1) + 8}" y="${yy + h / 2 + 4}">0</text>`; return; }
+      let acc = 0;
+      const segs = ORDER.filter(p => r.c[p] > 0);
+      segs.forEach((p, si) => {
+        const f = r.c[p] / r.n, x0 = x(acc) + (si ? 1 : 0), x1 = x(acc + f) - (si < segs.length - 1 ? 1 : 0), w = Math.max(0, x1 - x0);
+        const idx = items.push({ bucket: r.l, p, count: r.c[p], n: r.n }) - 1;
+        s += `<rect data-i="${idx}" x="${x0}" y="${yy}" width="${w}" height="${h}" fill="${PROF[p].color}" rx="${segs.length === 1 ? 4 : 2}"/>`;
+        if (w > 34) s += `<text class="lbl-in" x="${x0 + w / 2}" y="${yy + h / 2 + 4}" text-anchor="middle" pointer-events="none">${Math.round(f * 100)}%</text>`;
+        acc += f;
+      });
+      s += `<text class="lbl-out" x="${x(1) + 8}" y="${yy + h / 2 + 4}">${r.n}</text>`;
+    });
+    s += `</svg>`; el.innerHTML = s;
+    attachTips(el, items, (it) => `<b>${it.bucket}</b>${esc(PROF[it.p].long)}: <span class="num">${it.count} de ${it.n}</span> (${Math.round(it.count / it.n * 100)} %)`);
+  }
+
+  function renderRating(d) {
+    const el = $('chRating');
+    const pts = d.filter(s => s.rating != null).slice().sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    if (pts.length < 2) { el.innerHTML = `<div class="chart-empty">Valora al menos dos shots para ver tu evolución.</div>`; return; }
+    const W = Math.max(300, el.clientWidth), H = 260, m = { t: 18, r: 40, b: 40, l: 34 };
+    const x = lin(0, pts.length - 1, m.l, W - m.r), y = lin(0, 10, H - m.b, m.t);
+    const step = Math.max(1, Math.ceil(pts.length / 6));
+    const xt = []; for (let i = 0; i < pts.length; i += step) xt.push(i);
+    let s = `<svg viewBox="0 0 ${W} ${H}" aria-label="Valoración de ${pts.length} shots en orden cronológico">`;
+    s += `<defs><linearGradient id="gRate" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity="0.22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>`;
+    s += axisGrid(W, H, m, xt, [0, 2, 4, 6, 8, 10], x, y, i => '#' + (i + 1), v => v, 'Shot (orden cronológico)', '');
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p.rating).toFixed(1)}`).join('');
+    s += `<path d="${line}L${x(pts.length - 1)} ${y(0)}L${x(0)} ${y(0)}Z" fill="url(#gRate)"/>`;
+    s += `<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const last = pts[pts.length - 1], lx = x(pts.length - 1), ly = y(last.rating);
+    s += `<circle cx="${lx}" cy="${ly}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/><text class="end-t" x="${lx + 9}" y="${ly + 4}">${fmt(last.rating, 1)}</text>`;
+    s += `<line id="rateX" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="var(--axis)" stroke-width="1" visibility="hidden"/><circle id="rateDot" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>`;
+    const bw = (W - m.l - m.r) / Math.max(1, pts.length - 1);
+    pts.forEach((p, i) => { s += `<rect data-i="${i}" x="${x(i) - bw / 2}" y="${m.t}" width="${bw}" height="${H - m.t - m.b}" fill="transparent"/>`; });
+    s += `</svg>`; el.innerHTML = s;
+    attachTips(el, pts, (p, i) => {
+      const xl = el.querySelector('#rateX'), dot = el.querySelector('#rateDot');
+      xl.setAttribute('x1', x(i)); xl.setAttribute('x2', x(i)); xl.setAttribute('visibility', 'visible');
+      dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(p.rating)); dot.setAttribute('visibility', 'visible');
+      return `<b>Shot #${i + 1} · nota ${fmt(p.rating, 1)}</b>` + tipHtml(p).replace(/^<b>.*?<\/b>/, '');
+    });
+    const prevLeave = el.onpointerleave;
+    el.onpointerleave = () => { prevLeave && prevLeave(); el.querySelector('#rateX')?.setAttribute('visibility', 'hidden'); el.querySelector('#rateDot')?.setAttribute('visibility', 'hidden'); };
+  }
+
+  function renderAnalysis() {
+    if ($('view-analisis').hidden) return;
+    const d = analysisData();
+    renderKpis(d);
+    document.querySelectorAll('[data-legend]').forEach(l => { l.innerHTML = legendHtml(); });
+    renderScatter(d); renderControl(d); renderBuckets(d); renderRating(d);
+    paintShapes($('view-analisis'));
+  }
+
+  // ---------- navegación ----------
+  const VIEWS = ['dial-in', 'diario', 'analisis', 'guia'];
+  function route() {
+    const h = location.hash.replace('#', '');
+    const v = VIEWS.includes(h) ? h : 'dial-in';
+    VIEWS.forEach(n => { $('view-' + n).hidden = n !== v; });
+    document.querySelectorAll('nav.tabs a').forEach(a => { if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (v === 'diario') renderLog();
+    if (v === 'analisis') renderAnalysis();
+    window.scrollTo(0, 0);
+  }
+  function renderAll() {
+    if (!$('view-diario').hidden) renderLog();
+    if (!$('view-analisis').hidden) renderAnalysis();
+  }
+
+  // ---------- arranque ----------
+  function init() {
+    const rd = new Date(Date.now() - 12 * dayMs); $('roastDate').value = rd.toISOString().slice(0, 10);
+    store.shots = sortShots(loadLocal());
+    bindForm(); bindTimer(); bindLog();
+    $('coffeeFilter').addEventListener('change', renderAnalysis);
+    paintShapes();
+    updateReadout();
+    window.addEventListener('hashchange', route);
+    route();
+    let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (!$('view-analisis').hidden) renderAnalysis(); }, 150); });
+    connectDb();
+  }
+  init();
+})();
+</script>
+
+</body>
+</html>
