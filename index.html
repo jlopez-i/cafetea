@@ -176,6 +176,12 @@
   .rrow .ops { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
   @media (max-width: 600px) { .rrow { grid-template-columns: minmax(0, 1fr); } .rrow .ops { justify-content: flex-start; } }
 
+  .subh { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 18px 0 12px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  details.more { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+  details.more summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--ink); }
+  details.more .grid { margin-top: 12px; }
+  .rorigin { font-size: 12px; color: var(--ink-2); }
+
   /* Sliders sensoriales */
   .sens { display: grid; gap: 12px; }
   .sens-row { display: grid; grid-template-columns: 88px minmax(0, 1fr) 28px; gap: 12px; align-items: center; }
@@ -353,15 +359,24 @@
         <div class="panel">
           <div class="panel-h"><h2>Café</h2><span id="restInfo"></span></div>
           <div class="grid">
-            <div class="field"><label for="roaster">Tostador</label><div class="control"><input id="roaster" type="text" list="roasterList" value="Nomad" autocomplete="off"></div></div>
-            <div class="field"><label for="coffee">Origen / finca</label><div class="control"><input id="coffee" type="text" value="Etiopía Guji" autocomplete="off"></div></div>
-            <div class="field"><label for="variety">Variedad</label><div class="control"><input id="variety" type="text" list="varietyList" value="Heirloom" placeholder="Ej. Gesha, Bourbon" autocomplete="off"></div></div>
-            <div class="field"><label for="process">Proceso</label><div class="control">
-              <select id="process"><option>Lavado</option><option>Natural</option><option>Honey</option><option>Anaeróbico</option><option>Otro</option></select></div></div>
-            <div class="field"><label for="roast">Tueste</label><div class="control">
-              <select id="roast"><option>Claro</option><option selected>Medio</option><option>Medio-oscuro</option><option>Oscuro</option></select></div></div>
+            <div class="field"><label for="roaster">Tostador</label><div class="control"><input id="roaster" type="text" list="roasterList" value="Nomad" placeholder="Ej. Nomad" autocomplete="off"></div></div>
+            <div class="field"><label for="coffee">Café</label><div class="control"><input id="coffee" type="text" value="Etiopía Guji" placeholder="Ej. Ranitas" autocomplete="off"></div></div>
+            <div class="field"><label for="roast">Tueste</label><div class="control"><select id="roast"><option>Claro</option><option selected>Medio</option><option>Medio-oscuro</option><option>Oscuro</option></select></div></div>
+            <div class="field"><label for="roastFor">Perfil de tueste</label><div class="control"><select id="roastFor"><option value="">—</option><option>Espresso</option><option>Filtro</option><option>Omni</option></select></div></div>
             <div class="field"><label for="roastDate">Fecha de tueste</label><div class="control"><input id="roastDate" type="date"></div></div>
-            <div class="field"><label for="notesExpected">Notas del tostador</label><div class="control"><input id="notesExpected" type="text" value="Jazmín, bergamota, miel" autocomplete="off"></div></div>
+            <div class="field"><label for="score">Puntuación SCA</label><div class="control"><input id="score" type="number" step="0.25" min="60" max="100" placeholder="85"><span class="unit">pts</span></div></div>
+            <div class="field"><label for="notesExpected">Notas del tostador</label><div class="control"><input id="notesExpected" type="text" value="Jazmín, bergamota, miel" placeholder="Ej. Chocolate, caramelo" autocomplete="off"></div></div>
+          </div>
+          <h3 class="subh">Origen</h3>
+          <div class="grid">
+            <div class="field"><label for="origin">País</label><div class="control"><input id="origin" type="text" value="Etiopía" placeholder="Ej. Perú" autocomplete="off"></div></div>
+            <div class="field"><label for="region">Región</label><div class="control"><input id="region" type="text" value="Guji" placeholder="Ej. Cajamarca" autocomplete="off"></div></div>
+            <div class="field"><label for="farm">Finca</label><div class="control"><input id="farm" type="text" placeholder="Ej. San Ignacio" autocomplete="off"></div></div>
+            <div class="field"><label for="producer">Productor</label><div class="control"><input id="producer" type="text" placeholder="Ej. Productores locales" autocomplete="off"></div></div>
+            <div class="field"><label for="altitude">Altitud</label><div class="control"><input id="altitude" type="number" step="10" min="0" max="3000" placeholder="1500"><span class="unit">m</span></div></div>
+            <div class="field span-2"><label for="variety">Variedad</label><div class="control"><input id="variety" type="text" list="varietyList" value="Heirloom" placeholder="Ej. Catuaí, Caturra, Bourbon" autocomplete="off"></div></div>
+            <div class="field"><label for="process">Proceso</label><div class="control"><select id="process"><option selected>Lavado</option><option>Natural</option><option>Honey</option><option>Semi-lavado</option><option>Anaeróbico</option><option>Maceración carbónica</option><option>Otro</option></select></div></div>
+            <div class="field"><label for="screen">Criba</label><div class="control"><input id="screen" type="text" placeholder="Ej. 16/18" autocomplete="off"></div></div>
           </div>
         </div>
 
@@ -470,6 +485,23 @@
             <div class="field"><label for="rpTemp">Temperatura</label><div class="control"><input id="rpTemp" type="number" step="0.5" min="80" max="100"><span class="unit">°C</span></div></div>
             <div class="field"><label for="rpGrind">Molienda</label><div class="control"><input id="rpGrind" type="number" step="0.5" min="0" max="100" placeholder="Tu molino"><span class="unit">pos</span></div></div>
           </div>
+          <details class="more" id="rpMore">
+            <summary>Ficha del café (opcional)</summary>
+            <div class="grid">
+            <div class="field"><label for="rpOrigin">País</label><div class="control"><input id="rpOrigin" type="text" placeholder="Ej. Perú" autocomplete="off"></div></div>
+            <div class="field"><label for="rpRegion">Región</label><div class="control"><input id="rpRegion" type="text" placeholder="Ej. Cajamarca" autocomplete="off"></div></div>
+            <div class="field"><label for="rpFarm">Finca</label><div class="control"><input id="rpFarm" type="text" placeholder="Ej. San Ignacio" autocomplete="off"></div></div>
+            <div class="field"><label for="rpProducer">Productor</label><div class="control"><input id="rpProducer" type="text" placeholder="Ej. Productores locales" autocomplete="off"></div></div>
+            <div class="field"><label for="rpAltitude">Altitud</label><div class="control"><input id="rpAltitude" type="number" step="10" min="0" max="3000" placeholder="1500"><span class="unit">m</span></div></div>
+            <div class="field"><label for="rpVariety">Variedad</label><div class="control"><input id="rpVariety" type="text" list="varietyList" placeholder="Ej. Catuaí, Caturra, Bourbon" autocomplete="off"></div></div>
+            <div class="field"><label for="rpProcess">Proceso</label><div class="control"><select id="rpProcess"><option value="">—</option><option>Lavado</option><option>Natural</option><option>Honey</option><option>Semi-lavado</option><option>Anaeróbico</option><option>Maceración carbónica</option><option>Otro</option></select></div></div>
+            <div class="field"><label for="rpRoast">Tueste</label><div class="control"><select id="rpRoast"><option value="">—</option><option>Claro</option><option>Medio</option><option>Medio-oscuro</option><option>Oscuro</option></select></div></div>
+            <div class="field"><label for="rpRoastFor">Perfil de tueste</label><div class="control"><select id="rpRoastFor"><option value="">—</option><option>Espresso</option><option>Filtro</option><option>Omni</option></select></div></div>
+            <div class="field"><label for="rpScore">Puntuación SCA</label><div class="control"><input id="rpScore" type="number" step="0.25" min="60" max="100" placeholder="85"><span class="unit">pts</span></div></div>
+            <div class="field"><label for="rpScreen">Criba</label><div class="control"><input id="rpScreen" type="text" placeholder="Ej. 16/18" autocomplete="off"></div></div>
+            <div class="field"><label for="rpNotesExpected">Notas del tostador</label><div class="control"><input id="rpNotesExpected" type="text" placeholder="Ej. Chocolate, caramelo" autocomplete="off"></div></div>
+            </div>
+          </details>
           <div class="field" style="margin-top:14px;"><label for="rpNotes">Notas</label><textarea id="rpNotes" rows="2" placeholder="Preinfusión 5 s, bloom de 40 s, fuente de la receta…"></textarea></div>
           <p class="hint" id="rHint" style="margin-top:8px;"></p>
           <div class="actions" style="margin-top:14px;"><button class="btn btn-primary" type="submit" id="rSave">Guardar receta</button><button class="btn btn-ghost" type="button" id="rCancel" hidden>Cancelar</button></div>
@@ -893,7 +925,7 @@
     const ey = (tds && dose && bev) ? +(tds * bev / dose).toFixed(1) : null;
     return {
       method, brewer: method === 'filtro' ? $('brewer').value : '',
-      roaster: $('roaster').value.trim(), coffee: $('coffee').value.trim(), variety: $('variety').value.trim(), process: $('process').value, roast: $('roast').value,
+      roaster: $('roaster').value.trim(), coffee: $('coffee').value.trim(), variety: $('variety').value.trim(), origin: $('origin').value.trim(), region: $('region').value.trim(), farm: $('farm').value.trim(), producer: $('producer').value.trim(), altitude: num('altitude'), roastFor: $('roastFor').value, score: num('score'), screen: $('screen').value.trim(), process: $('process').value, roast: $('roast').value,
       roastDate: $('roastDate').value, notesExpected: $('notesExpected').value.trim(),
       dose, ratio, yield: yld, temp: num('temp'), grind: num('grind'), time, tds: tds || null, ey,
       category: category(ratio, method), profile: profileVal(),
@@ -936,7 +968,8 @@
   }
   function fillForm(s) {
     setMethod(methodOf(s), { keepForm: true });
-    ['roaster', 'coffee', 'variety', 'notesExpected'].forEach(k => { $(k).value = s[k] || ''; });
+    ['roaster', 'coffee', 'variety', 'notesExpected', 'origin', 'region', 'farm', 'producer', 'screen'].forEach(k => { $(k).value = s[k] || ''; });
+    $('altitude').value = s.altitude ?? ''; $('score').value = s.score ?? ''; $('roastFor').value = s.roastFor || '';
     if (s.process) $('process').value = s.process;
     if (s.roast) $('roast').value = s.roast;
     $('roastDate').value = s.roastDate || '';
@@ -1085,7 +1118,7 @@
     const q = $('search').value.trim().toLowerCase();
     const list = store.shots.filter(s => (logFilter === 'all' || s.profile === logFilter) &&
       (logMethod === 'all' || methodOf(s) === logMethod) &&
-      (!q || [s.roaster, s.coffee, s.variety, s.notes, s.process, s.brewer].join(' ').toLowerCase().includes(q)));
+      (!q || [s.roaster, s.coffee, s.variety, s.origin, s.region, s.farm, s.producer, s.notes, s.process, s.brewer].join(' ').toLowerCase().includes(q)));
     $('logCount').textContent = store.shots.length ? `${list.length} de ${store.shots.length} registros` : '';
     const el = $('log');
     if (!store.shots.length) {
@@ -1103,7 +1136,7 @@
         const tag = fil ? esc(s.brewer || 'Filtro') : 'Espresso';
         return `<div class="log-row">
           <span class="date">${esc(fmtDate(s.createdAt))}</span>
-          <div class="coffee"><b>${esc(s.coffee || 'Sin origen')}</b><span>${esc([s.roaster, s.variety, s.process, s.roast].filter(Boolean).join(' · ') || '—')}${s.notes ? ' — ' + esc(s.notes) : ''}</span></div>
+          <div class="coffee"><b>${esc(s.coffee || 'Sin origen')}</b><span>${esc([s.roaster, originLine(s), s.roast].filter(Boolean).join(' · ') || '—')}${s.notes ? ' — ' + esc(s.notes) : ''}</span></div>
           <div class="rec"><span class="mtag">${tag}</span>${fmt(s.dose, 1)} g → ${fmt(s.yield, fil ? 0 : 1)} g${fil ? ' agua' : ''} <small>1:${fmt(s.ratio, fil ? 1 : 2)} · ${esc(s.category || category(s.ratio, m))}${s.temp ? ' · ' + fmt(s.temp, 1) + ' °C' : ''}${s.grind != null ? ' · mol. ' + fmt(s.grind, s.grind % 1 ? 1 : 0) : ''}</small></div>
           <span class="r">${fmtTime(s.time, m)}</span>
           <span class="r">${s.ey != null ? fmt(s.ey, 1) + ' %' : '—'}</span>
@@ -1203,13 +1236,32 @@
   function applyRecipe(r, setNames) {
     setMethod(methodOf(r), { keepForm: true });
     if (setNames) { $('roaster').value = r.roaster || ''; if (r.coffee) $('coffee').value = r.coffee; }
+    // La ficha del café se copia cuando la receta es de un café concreto o se carga desde Recetas.
+    if (setNames || norm(r.coffee)) {
+      CAFE.forEach(([k, id]) => {
+        const v = r[k];
+        if (v != null && v !== '') $(id).value = v;
+        else if (setNames && k !== 'process' && k !== 'roast') $(id).value = '';
+      });
+    }
     const t = (r.tMin != null && r.tMax != null) ? (r.tMin + r.tMax) / 2 : (r.tMin ?? r.tMax);
     applyValues({ dose: r.dose, ratio: r.ratio, yield: r.yield, temp: r.temp ?? $('temp').value, grind: r.grind ?? $('grind').value, time: t != null ? Math.round(t * 2) / 2 : $('time').value, tds: '', brewer: r.brewer });
     updateReadout();
   }
 
   let rEditing = null, rPendingDelete = null, rmethod = 'espresso';
-  const RFIELDS = ['rpRoaster', 'rpCoffee', 'rpDose', 'rpRatio', 'rpYield', 'rpTMin', 'rpTMax', 'rpTemp', 'rpGrind', 'rpNotes'];
+  const RFIELDS = ['rpRoaster', 'rpCoffee', 'rpDose', 'rpRatio', 'rpYield', 'rpTMin', 'rpTMax', 'rpTemp', 'rpGrind', 'rpNotes',
+    'rpOrigin', 'rpRegion', 'rpFarm', 'rpProducer', 'rpAltitude', 'rpVariety', 'rpProcess', 'rpRoast', 'rpRoastFor', 'rpScore', 'rpScreen', 'rpNotesExpected'];
+  // Datos del café que viajan con la receta: [campo, id en Dial-in, id en Recetas]
+  const CAFE = [['origin', 'origin', 'rpOrigin'], ['region', 'region', 'rpRegion'], ['farm', 'farm', 'rpFarm'], ['producer', 'producer', 'rpProducer'],
+    ['altitude', 'altitude', 'rpAltitude'], ['variety', 'variety', 'rpVariety'], ['process', 'process', 'rpProcess'], ['roast', 'roast', 'rpRoast'],
+    ['roastFor', 'roastFor', 'rpRoastFor'], ['score', 'score', 'rpScore'], ['screen', 'screen', 'rpScreen'], ['notesExpected', 'notesExpected', 'rpNotesExpected']];
+  const CAFE_NUM = new Set(['altitude', 'score']);
+  function originLine(x) {
+    return [x.origin, x.region, x.farm ? 'Finca ' + x.farm : '', x.producer, x.altitude != null ? fmt(x.altitude, 0) + ' m' : '', x.variety, x.process,
+      x.roastFor ? 'Tueste ' + String(x.roastFor).toLowerCase() : '', x.score != null ? 'SCA ' + fmt(x.score, x.score % 1 ? 2 : 0) : '', x.screen ? 'Criba ' + x.screen : '']
+      .filter(Boolean).join(' · ');
+  }
   function setRMethod(m) {
     rmethod = m === 'filtro' ? 'filtro' : 'espresso';
     const fil = rmethod === 'filtro';
@@ -1223,6 +1275,7 @@
   }
   function resetRForm() {
     RFIELDS.forEach(k => { $(k).value = ''; });
+    $('rpMore').open = false;
     rEditing = null; $('rformTitle').textContent = 'Nueva receta'; $('rSave').textContent = 'Guardar receta'; $('rCancel').hidden = true;
   }
   function fillRForm(r) {
@@ -1230,6 +1283,8 @@
     const map = { rpRoaster: r.roaster, rpCoffee: r.coffee, rpDose: r.dose, rpRatio: r.ratio, rpYield: r.yield, rpTMin: r.tMin, rpTMax: r.tMax, rpTemp: r.temp, rpGrind: r.grind, rpNotes: r.notes };
     Object.entries(map).forEach(([k, v]) => { $(k).value = v ?? ''; });
     if (r.brewer) { $('rpBrewer').value = r.brewer; if ($('rpBrewer').value !== r.brewer) $('rpBrewer').value = 'Otro'; }
+    CAFE.forEach(([k, , rid]) => { $(rid).value = r[k] ?? ''; });
+    $('rpMore').open = CAFE.some(([k]) => r[k] != null && r[k] !== '');
     rEditing = r.id; $('rformTitle').textContent = 'Editar receta'; $('rSave').textContent = 'Guardar cambios'; $('rCancel').hidden = false;
   }
   function renderRecipes() {
@@ -1245,7 +1300,7 @@
       const ops = rPendingDelete === r.id
         ? `<button class="btn btn-ghost btn-sm" type="button" data-act="r-del-yes" data-id="${esc(r.id)}" style="color:var(--bad);border-color:var(--bad)">Borrar</button><button class="btn btn-ghost btn-sm" type="button" data-act="r-del-no">Cancelar</button>`
         : `<button class="btn btn-ghost btn-sm" type="button" data-act="r-use" data-id="${esc(r.id)}">Usar en Dial-in</button><button class="btn btn-ghost btn-sm" type="button" data-act="r-edit" data-id="${esc(r.id)}">Editar</button><button class="btn btn-ghost btn-sm" type="button" data-act="r-del" data-id="${esc(r.id)}">Borrar</button>`;
-      return `<div class="rrow"><div class="rc"><b><span class="mtag">${fil ? esc(r.brewer || 'Filtro') : 'Espresso'}</span>${esc(r.coffee || 'Todos sus cafés')}</b><span class="rline">${recipeLine(r)}</span>${r.notes ? `<span class="rnote">${esc(r.notes)}</span>` : ''}</div><div class="ops">${ops}</div></div>`;
+      return `<div class="rrow"><div class="rc"><b><span class="mtag">${fil ? esc(r.brewer || 'Filtro') : 'Espresso'}</span>${esc(r.coffee || 'Todos sus cafés')}</b><span class="rline">${recipeLine(r)}</span>${originLine(r) ? `<span class="rorigin">${esc(originLine(r))}</span>` : ''}${r.notes ? `<span class="rnote">${esc(r.notes)}</span>` : ''}</div><div class="ops">${ops}</div></div>`;
     }).join('')}</div>`).join('');
   }
   function renderDatalists() {
@@ -1275,6 +1330,7 @@
         method: rmethod, brewer: rmethod === 'filtro' ? $('rpBrewer').value : '',
         roaster, coffee: $('rpCoffee').value.trim(), dose, ratio, yield: yld, tMin, tMax,
         temp: num('rpTemp'), grind: num('rpGrind'), notes: $('rpNotes').value.trim(),
+        ...Object.fromEntries(CAFE.map(([k, , rid]) => [k, CAFE_NUM.has(k) ? num(rid) : $(rid).value.trim()])),
         createdAt: (prev && prev.createdAt) || new Date().toISOString(), updatedAt: new Date().toISOString()
       };
       const wasEditing = !!rEditing;

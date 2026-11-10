@@ -25,7 +25,9 @@ Cafetea te ayuda a ajustar una receta (*dial-in*): anotas el café y la receta, 
 
 ### Dial-in
 - **Selector Espresso / Filtro.** Cada modo tiene sus propios valores por defecto, unidades y rangos, y recuerda lo último que escribiste al cambiar de uno a otro.
-- **Ficha del café:** tostador, origen, variedad (Gesha, Bourbon, Caturra, SL28… con sugerencias al escribir), proceso (lavado, natural, honey, anaeróbico), nivel de tueste, fecha de tueste y notas del tostador. Calcula los **días de reposo** desde la fecha de tueste.
+- **Ficha del café**, con los mismos datos que traen las tarjetas de los tostadores:
+  - *Café:* tostador, nombre del café, nivel de tueste, perfil de tueste (espresso, filtro, omni), fecha de tueste, puntuación SCA y notas del tostador.
+  - *Origen:* país, región, finca, productor, altitud, variedad (con sugerencias al escribir; admite varias), proceso (lavado, natural, honey, semi-lavado, anaeróbico, maceración carbónica) y criba. Calcula los **días de reposo** desde la fecha de tueste.
 - **Receta:** dosis, ratio, bebida o agua (si cambias el ratio se recalcula la cantidad, y al revés), temperatura, punto de molienda y TDS opcional.
 - **Método de filtro:** V60, Kalita Wave, Chemex, Origami, AeroPress, prensa francesa u otro.
 - **Cronómetro integrado:** al pararlo, el tiempo pasa directamente a la receta. En espresso se muestra en segundos y en filtro en minutos.
@@ -38,11 +40,12 @@ Cafetea te ayuda a ajustar una receta (*dial-in*): anotas el café y la receta, 
 La receta de partida que recomienda cada tostador, normalmente en la bolsa o en su web.
 - Una receta por tostador y método (espresso o filtro). Puede servir para todos sus cafés o solo para uno concreto; si hay una para ese café, tiene prioridad sobre la general.
 - Campos: tostador, café (opcional), método de filtro, dosis, ratio y bebida o agua (enlazados), rango de tiempo, temperatura, molienda y notas.
+- **Ficha del café opcional** (país, región, finca, productor, altitud, variedad, proceso, tueste, puntuación SCA, criba y notas). Al usar la receta en Dial-in, la ficha se copia con ella.
 - Agrupadas por tostador, con botones **Usar en Dial-in**, **Editar** y **Borrar**.
 
 ### Diario
 - Historial de todas las extracciones, de la más reciente a la más antigua.
-- Búsqueda por tostador, origen, variedad, proceso, método o notas.
+- Búsqueda por tostador, café, país, región, finca, productor, variedad, proceso, método o notas.
 - Filtros por perfil de cata y por método (espresso / filtro).
 - **Repetir** carga una receta guardada en Dial-in; **Borrar** pide confirmación.
 
