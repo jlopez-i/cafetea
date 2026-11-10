@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Cafetea: cuaderno de dial-in de espresso y filtro con cronómetro, diagnóstico en taza, diario y gráficos de extracción.">
+<meta name="description" content="Cafetea: cuaderno de dial-in de espresso y filtro con recetas patrón por tostador, cronómetro, diagnóstico en taza, diario y gráficos de extracción.">
 <meta name="theme-color" content="#1c1612">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 34 34%27%3E%3Ccircle cx=%2717%27 cy=%2717%27 r=%2715.5%27 fill=%27none%27 stroke=%27%231f1813%27 stroke-width=%272%27/%3E%3Ccircle cx=%2717%27 cy=%2717%27 r=%2711%27 fill=%27%23a95c17%27/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -96,7 +96,7 @@
   @media (max-width: 720px) {
     .top .wrap { gap: 10px; }
     nav.tabs { order: 3; width: 100%; margin-left: 0; justify-content: space-between; }
-    nav.tabs a { flex: 1; text-align: center; padding: 7px 6px; }
+    nav.tabs a { flex: 1; text-align: center; padding: 7px 2px; font-size: 13px; }
     .sync { margin-left: auto; }
   }
 
@@ -159,6 +159,22 @@
   .mswitch input:checked + label { background: var(--accent); color: var(--accent-ink); }
   .mswitch input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: 2px; }
   .mtag { display: inline-block; font-family: var(--f-body); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-right: 8px; }
+
+  .std { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1px dashed color-mix(in srgb, var(--accent) 60%, transparent); background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+  .std-t { display: grid; gap: 2px; min-width: 0; flex: 1 1 220px; }
+  .std-t b { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+  .std-t .num { font-size: 13px; color: var(--ink); }
+  .std-t em { font-style: normal; color: var(--ink-2); font-size: 12px; }
+  .rlist { display: grid; gap: 16px; min-width: 0; align-content: start; }
+  .rgroup { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+  .rgroup h3 { font-family: var(--f-display); font-size: 26px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1; padding: 16px 16px 12px; }
+  .rrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); }
+  .rc { display: grid; gap: 3px; min-width: 0; }
+  .rc b { font-weight: 600; }
+  .rline { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .rnote { font-size: 12px; color: var(--muted); }
+  .rrow .ops { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  @media (max-width: 600px) { .rrow { grid-template-columns: minmax(0, 1fr); } .rrow .ops { justify-content: flex-start; } }
 
   /* Sliders sensoriales */
   .sens { display: grid; gap: 12px; }
@@ -305,6 +321,7 @@
     </a>
     <nav class="tabs" aria-label="Secciones">
       <a href="#dial-in" data-view="dial-in">Dial-in</a>
+      <a href="#recetas" data-view="recetas">Recetas</a>
       <a href="#diario" data-view="diario">Diario</a>
       <a href="#analisis" data-view="analisis">Análisis</a>
       <a href="#guia" data-view="guia">Guía</a>
@@ -336,8 +353,9 @@
         <div class="panel">
           <div class="panel-h"><h2>Café</h2><span id="restInfo"></span></div>
           <div class="grid">
-            <div class="field"><label for="roaster">Tostador</label><div class="control"><input id="roaster" type="text" value="Nomad" autocomplete="off"></div></div>
+            <div class="field"><label for="roaster">Tostador</label><div class="control"><input id="roaster" type="text" list="roasterList" value="Nomad" autocomplete="off"></div></div>
             <div class="field"><label for="coffee">Origen / finca</label><div class="control"><input id="coffee" type="text" value="Etiopía Guji" autocomplete="off"></div></div>
+            <div class="field"><label for="variety">Variedad</label><div class="control"><input id="variety" type="text" list="varietyList" value="Heirloom" placeholder="Ej. Gesha, Bourbon" autocomplete="off"></div></div>
             <div class="field"><label for="process">Proceso</label><div class="control">
               <select id="process"><option>Lavado</option><option>Natural</option><option>Honey</option><option>Anaeróbico</option><option>Otro</option></select></div></div>
             <div class="field"><label for="roast">Tueste</label><div class="control">
@@ -349,6 +367,7 @@
 
         <div class="panel">
           <div class="panel-h"><h2>Receta</h2><span id="recetaHint">Cambia ratio o bebida: el otro se recalcula</span></div>
+          <div class="std" id="stdBox" aria-live="polite" hidden></div>
           <div class="grid">
             <div class="field" data-only="filtro" hidden><label for="brewer">Método</label><div class="control"><select id="brewer"><option>V60</option><option>Kalita Wave</option><option>Chemex</option><option>Origami</option><option>AeroPress</option><option>Prensa francesa</option><option>Otro</option></select></div></div>
             <div class="field"><label for="dose">Dosis</label><div class="control"><input id="dose" type="number" step="0.1" min="5" max="30" value="18"><span class="unit">g</span></div></div>
@@ -420,6 +439,41 @@
           <button class="btn btn-primary" id="btnSave" type="button">Guardar shot</button>
           <button class="btn btn-ghost" id="btnNew" type="button" title="Limpiar cata y tiempo">Nuevo</button>
         </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- RECETAS -->
+  <section id="view-recetas" data-view-panel="recetas" hidden>
+    <div class="view-head">
+      <div><h1>Recetas patrón</h1><p>La receta de partida que recomienda cada tostador. Cuando escribas ese tostador en Dial-in, Cafetea te la propondrá y te dirá en qué te desvías.</p></div>
+      <button class="btn btn-ghost btn-sm" id="btnNewRecipe" type="button">Nueva receta</button>
+    </div>
+    <div class="dial">
+      <div class="rlist" id="rlist"></div>
+      <aside class="readout" aria-label="Formulario de receta patrón">
+        <form class="panel" id="rform" novalidate>
+          <div class="panel-h"><h2 id="rformTitle">Nueva receta</h2><span>* obligatorio</span></div>
+          <div class="mswitch" role="radiogroup" aria-label="Tipo de café de la receta" style="margin-bottom:14px;">
+            <input type="radio" name="rmethod" id="r-espresso" value="espresso" checked><label for="r-espresso">Espresso</label>
+            <input type="radio" name="rmethod" id="r-filtro" value="filtro"><label for="r-filtro">Filtro</label>
+          </div>
+          <div class="grid">
+            <div class="field"><label for="rpRoaster">Tostador *</label><div class="control"><input id="rpRoaster" type="text" list="roasterList" autocomplete="off" placeholder="Ej. Nomad"></div></div>
+            <div class="field"><label for="rpCoffee">Café</label><div class="control"><input id="rpCoffee" type="text" autocomplete="off" placeholder="Vacío: todos sus cafés"></div></div>
+            <div class="field" data-ronly="filtro" hidden><label for="rpBrewer">Método</label><div class="control"><select id="rpBrewer"><option>V60</option><option>Kalita Wave</option><option>Chemex</option><option>Origami</option><option>AeroPress</option><option>Prensa francesa</option><option>Otro</option></select></div></div>
+            <div class="field"><label for="rpDose">Dosis *</label><div class="control"><input id="rpDose" type="number" step="0.1" min="5" max="60"><span class="unit">g</span></div></div>
+            <div class="field"><label for="rpRatio">Ratio 1:X</label><div class="control"><input id="rpRatio" type="number" step="0.05" min="0.8" max="20"><span class="unit">×</span></div></div>
+            <div class="field"><label for="rpYield" id="lblRpYield">Bebida *</label><div class="control"><input id="rpYield" type="number" step="0.1" min="5" max="1000"><span class="unit">g</span></div></div>
+            <div class="field"><label for="rpTMin">Tiempo desde</label><div class="control"><input id="rpTMin" type="number" step="1" min="0" max="900"><span class="unit">s</span></div></div>
+            <div class="field"><label for="rpTMax">Tiempo hasta</label><div class="control"><input id="rpTMax" type="number" step="1" min="0" max="900"><span class="unit">s</span></div></div>
+            <div class="field"><label for="rpTemp">Temperatura</label><div class="control"><input id="rpTemp" type="number" step="0.5" min="80" max="100"><span class="unit">°C</span></div></div>
+            <div class="field"><label for="rpGrind">Molienda</label><div class="control"><input id="rpGrind" type="number" step="0.5" min="0" max="100" placeholder="Tu molino"><span class="unit">pos</span></div></div>
+          </div>
+          <div class="field" style="margin-top:14px;"><label for="rpNotes">Notas</label><textarea id="rpNotes" rows="2" placeholder="Preinfusión 5 s, bloom de 40 s, fuente de la receta…"></textarea></div>
+          <p class="hint" id="rHint" style="margin-top:8px;"></p>
+          <div class="actions" style="margin-top:14px;"><button class="btn btn-primary" type="submit" id="rSave">Guardar receta</button><button class="btn btn-ghost" type="button" id="rCancel" hidden>Cancelar</button></div>
+        </form>
       </aside>
     </div>
   </section>
@@ -590,6 +644,9 @@
   </section>
 </main>
 
+<datalist id="roasterList"></datalist>
+<datalist id="varietyList"><option value="Gesha"></option><option value="Bourbon"></option><option value="Bourbon rosado"></option><option value="Typica"></option><option value="Caturra"></option><option value="Catuaí"></option><option value="Castillo"></option><option value="Pacamara"></option><option value="Maragogipe"></option><option value="Mundo Novo"></option><option value="SL28"></option><option value="SL34"></option><option value="Ruiru 11"></option><option value="Batian"></option><option value="Heirloom"></option><option value="74110 / 74112"></option><option value="Sidra"></option><option value="Wush Wush"></option><option value="Java"></option><option value="Laurina"></option><option value="Villa Sarchi"></option><option value="Catimor"></option><option value="Parainema"></option><option value="Marsellesa"></option></datalist>
+
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -666,7 +723,7 @@
 
   // ---------- almacenamiento ----------
   const LS_KEY = 'cafetea_shots';
-  const store = { mode: 'local', shots: [], col: null };
+  const store = { mode: 'local', shots: [], col: null, rmode: 'local', recipes: [], rcol: null };
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
   function legacyShots() {
@@ -681,7 +738,7 @@
         method: 'espresso', brewer: '',
         roaster: o.brand && o.brand !== 'Sin especificación' ? o.brand : '',
         coffee: o.origin && o.origin !== '-' ? o.origin : '',
-        process: '', roast: '', roastDate: '', notesExpected: '',
+        variety: '', process: '', roast: '', roastDate: '', notesExpected: '',
         dose, ratio, yield: parseFloat(o.yield) || (dose && ratio ? +(dose * ratio).toFixed(1) : null),
         temp: null, grind: parseFloat(o.grind) || null, time: parseFloat(o.time) || null,
         tds: null, ey: null, category: category(ratio), profile: map[o.flavorProfile] || 'bal',
@@ -762,14 +819,32 @@
       clearTimeout(timer);
       setSync('local', 'Guardado en este navegador');
     });
+    let rcol;
+    try { rcol = db.doc('data/users/' + uid + '/recipes').collection('items'); } catch (e) { return; }
+    let rfirst = true;
+    rcol.onSnapshot(async (snap) => {
+      store.rmode = 'db'; store.rcol = rcol;
+      store.recipes = sortRecipes(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+      renderAll(); updateReadout();
+      if (rfirst && !snap.metadata.fromCache) {
+        rfirst = false;
+        const flag = 'cafetea_rmigrated_' + uid;
+        const local = loadLocalRecipes();
+        if (!lsGet(flag) && local.length) {
+          const have = new Set(store.recipes.map(r => r.id));
+          for (const r of local) { if (!have.has(r.id)) { try { await rcol.doc(r.id).set(r); } catch (e) { return; } } }
+        }
+        lsSet(flag, '1');
+      }
+    }, () => {});
   }
 
   // ---------- datos de ejemplo (solo visualización, nunca se guardan) ----------
   function makeSamples(m) {
     let seed = m === 'filtro' ? 23 : 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
     const coffees = [
-      { roaster: 'Nomad', coffee: 'Etiopía Guji', process: 'Lavado', roast: 'Claro', dose: 18 },
-      { roaster: 'Syra', coffee: 'Colombia Huila', process: 'Natural', roast: 'Medio', dose: 18.5 }
+      { roaster: 'Nomad', coffee: 'Etiopía Guji', variety: 'Heirloom', process: 'Lavado', roast: 'Claro', dose: 18 },
+      { roaster: 'Syra', coffee: 'Colombia Huila', variety: 'Pink Bourbon', process: 'Natural', roast: 'Medio', dose: 18.5 }
     ];
     const brewers = ['V60', 'Kalita Wave'];
     const out = []; const now = Date.now(); const N = 26;
@@ -795,7 +870,7 @@
       out.push({
         id: `sample-${m}-${i}`, sample: true, createdAt: new Date(created).toISOString(),
         method: m, brewer: m === 'filtro' ? brewers[i % 2] : '',
-        roaster: c.roaster, coffee: c.coffee, process: c.process, roast: c.roast,
+        roaster: c.roaster, coffee: c.coffee, variety: c.variety, process: c.process, roast: c.roast,
         roastDate: new Date(created - (9 + i * 0.4) * dayMs).toISOString().slice(0, 10), notesExpected: '',
         dose, ratio, yield: yld, temp: m === 'filtro' ? 94 : 93, grind: m === 'filtro' ? 22 : 10, time,
         tds: hasTds ? +(ey * dose / bev).toFixed(2) : null, ey: hasTds ? ey : null,
@@ -818,7 +893,7 @@
     const ey = (tds && dose && bev) ? +(tds * bev / dose).toFixed(1) : null;
     return {
       method, brewer: method === 'filtro' ? $('brewer').value : '',
-      roaster: $('roaster').value.trim(), coffee: $('coffee').value.trim(), process: $('process').value, roast: $('roast').value,
+      roaster: $('roaster').value.trim(), coffee: $('coffee').value.trim(), variety: $('variety').value.trim(), process: $('process').value, roast: $('roast').value,
       roastDate: $('roastDate').value, notesExpected: $('notesExpected').value.trim(),
       dose, ratio, yield: yld, temp: num('temp'), grind: num('grind'), time, tds: tds || null, ey,
       category: category(ratio, method), profile: profileVal(),
@@ -861,7 +936,7 @@
   }
   function fillForm(s) {
     setMethod(methodOf(s), { keepForm: true });
-    ['roaster', 'coffee', 'notesExpected'].forEach(k => { $(k).value = s[k] || ''; });
+    ['roaster', 'coffee', 'variety', 'notesExpected'].forEach(k => { $(k).value = s[k] || ''; });
     if (s.process) $('process').value = s.process;
     if (s.roast) $('roast').value = s.roast;
     $('roastDate').value = s.roastDate || '';
@@ -954,6 +1029,7 @@
     const days = restDays();
     $('restInfo').textContent = days == null ? 'Añade la fecha de tueste para ver el reposo' : days < 0 ? 'Fecha de tueste en el futuro' : `${days} días de reposo`;
     $('diag').innerHTML = diagnose(f, days != null && days >= 0 ? days : null);
+    updateStd(f);
   }
 
   function bindForm() {
@@ -961,7 +1037,7 @@
     $('dose').addEventListener('input', fromRatio);
     $('ratio').addEventListener('input', fromRatio);
     $('yield').addEventListener('input', () => { const d = num('dose'), y = num('yield'); if (d && y) $('ratio').value = (y / d).toFixed(method === 'filtro' ? 1 : 2); updateReadout(); });
-    ['time', 'tds', 'temp', 'grind', 'roastDate', 'roast', 'brewer'].forEach(id => $(id).addEventListener('input', updateReadout));
+    ['time', 'tds', 'temp', 'grind', 'roastDate', 'roast', 'brewer', 'roaster', 'coffee'].forEach(id => $(id).addEventListener('input', updateReadout));
     document.querySelectorAll('input[name="profile"]').forEach(r => r.addEventListener('change', updateReadout));
     document.querySelectorAll('input[name="method"], input[name="amethod"]').forEach(r => r.addEventListener('change', () => { if (r.checked) setMethod(r.value); }));
     ['sweet', 'acid', 'body', 'bitter', 'rating'].forEach(id => {
@@ -1009,7 +1085,7 @@
     const q = $('search').value.trim().toLowerCase();
     const list = store.shots.filter(s => (logFilter === 'all' || s.profile === logFilter) &&
       (logMethod === 'all' || methodOf(s) === logMethod) &&
-      (!q || [s.roaster, s.coffee, s.notes, s.process, s.brewer].join(' ').toLowerCase().includes(q)));
+      (!q || [s.roaster, s.coffee, s.variety, s.notes, s.process, s.brewer].join(' ').toLowerCase().includes(q)));
     $('logCount').textContent = store.shots.length ? `${list.length} de ${store.shots.length} registros` : '';
     const el = $('log');
     if (!store.shots.length) {
@@ -1027,7 +1103,7 @@
         const tag = fil ? esc(s.brewer || 'Filtro') : 'Espresso';
         return `<div class="log-row">
           <span class="date">${esc(fmtDate(s.createdAt))}</span>
-          <div class="coffee"><b>${esc(s.coffee || 'Sin origen')}</b><span>${esc([s.roaster, s.process, s.roast].filter(Boolean).join(' · ') || '—')}${s.notes ? ' — ' + esc(s.notes) : ''}</span></div>
+          <div class="coffee"><b>${esc(s.coffee || 'Sin origen')}</b><span>${esc([s.roaster, s.variety, s.process, s.roast].filter(Boolean).join(' · ') || '—')}${s.notes ? ' — ' + esc(s.notes) : ''}</span></div>
           <div class="rec"><span class="mtag">${tag}</span>${fmt(s.dose, 1)} g → ${fmt(s.yield, fil ? 0 : 1)} g${fil ? ' agua' : ''} <small>1:${fmt(s.ratio, fil ? 1 : 2)} · ${esc(s.category || category(s.ratio, m))}${s.temp ? ' · ' + fmt(s.temp, 1) + ' °C' : ''}${s.grind != null ? ' · mol. ' + fmt(s.grind, s.grind % 1 ? 1 : 0) : ''}</small></div>
           <span class="r">${fmtTime(s.time, m)}</span>
           <span class="r">${s.ey != null ? fmt(s.ey, 1) + ' %' : '—'}</span>
@@ -1060,6 +1136,167 @@
       else if (act === 'del') { pendingDelete = id; renderLog(); }
       else if (act === 'del-no') { pendingDelete = null; renderLog(); }
       else if (act === 'del-yes') { pendingDelete = null; await deleteShot(id); toast('Registro borrado'); }
+    });
+  }
+
+  // ---------- recetas patrón ----------
+  const RKEY = 'cafetea_recipes';
+  const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const sortRecipes = (a) => a.slice().sort((x, y) => norm(x.roaster).localeCompare(norm(y.roaster)) || (x.method || '').localeCompare(y.method || '') || norm(x.coffee).localeCompare(norm(y.coffee)));
+  function loadLocalRecipes() { try { const v = JSON.parse(lsGet(RKEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  async function saveRecipe(r) {
+    if (store.rmode === 'db' && store.rcol) {
+      try { await store.rcol.doc(r.id).set(r); return true; }
+      catch (e) { toast(e && e.code === 'quota_exceeded' ? 'No caben más recetas. Borra alguna para guardar.' : 'No se pudo guardar la receta. Inténtalo de nuevo.'); return false; }
+    }
+    store.recipes = sortRecipes([r, ...store.recipes.filter(x => x.id !== r.id)]);
+    lsSet(RKEY, JSON.stringify(store.recipes));
+    renderAll(); updateReadout();
+    return true;
+  }
+  async function deleteRecipe(id) {
+    if (store.rmode === 'db' && store.rcol) {
+      try { await store.rcol.doc(id).delete(); } catch (e) { toast('No se pudo borrar la receta. Inténtalo de nuevo.'); }
+      return;
+    }
+    store.recipes = store.recipes.filter(r => r.id !== id);
+    lsSet(RKEY, JSON.stringify(store.recipes));
+    renderAll(); updateReadout();
+  }
+  // Receta patrón para un tostador: primero la de ese café, si no, la general del tostador.
+  function findStd(roaster, coffee, m) {
+    const r0 = norm(roaster); if (!r0) return null;
+    const c0 = norm(coffee);
+    const cands = store.recipes.filter(r => norm(r.roaster) === r0 && methodOf(r) === m);
+    if (!cands.length) return null;
+    return (c0 && cands.find(r => norm(r.coffee) && (c0.includes(norm(r.coffee)) || norm(r.coffee).includes(c0)))) || cands.find(r => !norm(r.coffee)) || null;
+  }
+  function timeRange(r) {
+    const fil = methodOf(r) === 'filtro', a = r.tMin, b = r.tMax;
+    if (a == null && b == null) return '';
+    const f = (v) => fil ? fmtClock(v) : fmt(v, v % 1 ? 1 : 0);
+    if (a != null && b != null && a !== b) return fil ? `${f(a)}–${f(b)}` : `${f(a)}–${f(b)} s`;
+    const v = a ?? b; return fil ? f(v) : `${f(v)} s`;
+  }
+  function recipeLine(r) {
+    const fil = methodOf(r) === 'filtro';
+    const parts = [`${fmt(r.dose, 1)} g → ${fmt(r.yield, fil ? 0 : 1)} g${fil ? ' agua' : ''}`, `1:${fmt(r.ratio, fil ? 1 : 2)}`];
+    const tr = timeRange(r); if (tr) parts.push(tr);
+    if (r.temp != null) parts.push(`${fmt(r.temp, 1)} °C`);
+    if (r.grind != null) parts.push(`mol. ${fmt(r.grind, r.grind % 1 ? 1 : 0)}`);
+    return parts.join(' · ');
+  }
+  let stdCurrent = null;
+  function updateStd(f) {
+    const box = $('stdBox'); const r = findStd(f.roaster, f.coffee, method); stdCurrent = r;
+    if (!r) { box.hidden = true; box.innerHTML = ''; return; }
+    const fil = method === 'filtro', diffs = [];
+    const sign = (d) => d > 0 ? '+' : '−';
+    if (f.dose != null && r.dose != null && Math.abs(f.dose - r.dose) >= 0.1) diffs.push(`dosis ${sign(f.dose - r.dose)}${fmt(Math.abs(f.dose - r.dose), 1)} g`);
+    if (f.ratio != null && r.ratio != null && Math.abs(f.ratio - r.ratio) >= (fil ? 0.1 : 0.02)) diffs.push(`ratio ${sign(f.ratio - r.ratio)}${fmt(Math.abs(f.ratio - r.ratio), fil ? 1 : 2)}`);
+    const lo = r.tMin ?? r.tMax, hi = r.tMax ?? r.tMin;
+    if (f.time != null && lo != null && (f.time < lo || f.time > hi)) diffs.push(`tiempo ${f.time < lo ? 'por debajo' : 'por encima'} del rango`);
+    if (f.temp != null && r.temp != null && Math.abs(f.temp - r.temp) >= 0.5) diffs.push(`temperatura ${sign(f.temp - r.temp)}${fmt(Math.abs(f.temp - r.temp), 1)} °C`);
+    box.innerHTML = `<div class="std-t"><b>Receta patrón · ${esc(r.roaster)}${r.coffee ? ' · ' + esc(r.coffee) : ''}</b><span class="num">${fil ? esc(r.brewer || 'Filtro') + ' · ' : ''}${recipeLine(r)}</span><em>${diffs.length ? 'Respecto al patrón: ' + diffs.join(', ') + '.' : 'Tu receta coincide con el patrón.'}</em>${r.notes ? `<em>${esc(r.notes)}</em>` : ''}</div><button class="btn btn-ghost btn-sm" type="button" data-act="apply-std">Aplicar patrón</button>`;
+    box.hidden = false;
+  }
+  function applyRecipe(r, setNames) {
+    setMethod(methodOf(r), { keepForm: true });
+    if (setNames) { $('roaster').value = r.roaster || ''; if (r.coffee) $('coffee').value = r.coffee; }
+    const t = (r.tMin != null && r.tMax != null) ? (r.tMin + r.tMax) / 2 : (r.tMin ?? r.tMax);
+    applyValues({ dose: r.dose, ratio: r.ratio, yield: r.yield, temp: r.temp ?? $('temp').value, grind: r.grind ?? $('grind').value, time: t != null ? Math.round(t * 2) / 2 : $('time').value, tds: '', brewer: r.brewer });
+    updateReadout();
+  }
+
+  let rEditing = null, rPendingDelete = null, rmethod = 'espresso';
+  const RFIELDS = ['rpRoaster', 'rpCoffee', 'rpDose', 'rpRatio', 'rpYield', 'rpTMin', 'rpTMax', 'rpTemp', 'rpGrind', 'rpNotes'];
+  function setRMethod(m) {
+    rmethod = m === 'filtro' ? 'filtro' : 'espresso';
+    const fil = rmethod === 'filtro';
+    $('r-' + rmethod).checked = true;
+    document.querySelectorAll('[data-ronly]').forEach(el => { el.hidden = el.dataset.ronly !== rmethod; });
+    $('lblRpYield').textContent = fil ? 'Agua *' : 'Bebida *';
+    $('rpRatio').step = M[rmethod].ratioStep;
+    const ph = fil ? { rpDose: '15', rpRatio: '16', rpYield: '240', rpTMin: '150', rpTMax: '210', rpTemp: '94' } : { rpDose: '18', rpRatio: '2,2', rpYield: '40', rpTMin: '28', rpTMax: '32', rpTemp: '94' };
+    Object.entries(ph).forEach(([k, v]) => { $(k).placeholder = v; });
+    $('rHint').textContent = fil ? 'Tiempos en segundos (180 = 3:00). El agua es el total vertido.' : 'Tiempos en segundos, desde que empieza la extracción.';
+  }
+  function resetRForm() {
+    RFIELDS.forEach(k => { $(k).value = ''; });
+    rEditing = null; $('rformTitle').textContent = 'Nueva receta'; $('rSave').textContent = 'Guardar receta'; $('rCancel').hidden = true;
+  }
+  function fillRForm(r) {
+    setRMethod(methodOf(r));
+    const map = { rpRoaster: r.roaster, rpCoffee: r.coffee, rpDose: r.dose, rpRatio: r.ratio, rpYield: r.yield, rpTMin: r.tMin, rpTMax: r.tMax, rpTemp: r.temp, rpGrind: r.grind, rpNotes: r.notes };
+    Object.entries(map).forEach(([k, v]) => { $(k).value = v ?? ''; });
+    if (r.brewer) { $('rpBrewer').value = r.brewer; if ($('rpBrewer').value !== r.brewer) $('rpBrewer').value = 'Otro'; }
+    rEditing = r.id; $('rformTitle').textContent = 'Editar receta'; $('rSave').textContent = 'Guardar cambios'; $('rCancel').hidden = false;
+  }
+  function renderRecipes() {
+    const el = $('rlist');
+    if (!store.recipes.length) {
+      el.innerHTML = `<div class="panel empty"><b>Aún no hay recetas patrón</b><span>Añade con el formulario la receta que recomienda tu tostador. Suele venir en la bolsa o en su web.</span></div>`;
+      return;
+    }
+    const groups = new Map();
+    store.recipes.forEach(r => { const k = norm(r.roaster); if (!groups.has(k)) groups.set(k, { name: r.roaster, items: [] }); groups.get(k).items.push(r); });
+    el.innerHTML = [...groups.values()].map(g => `<div class="rgroup"><h3>${esc(g.name)}</h3>${g.items.map(r => {
+      const fil = methodOf(r) === 'filtro';
+      const ops = rPendingDelete === r.id
+        ? `<button class="btn btn-ghost btn-sm" type="button" data-act="r-del-yes" data-id="${esc(r.id)}" style="color:var(--bad);border-color:var(--bad)">Borrar</button><button class="btn btn-ghost btn-sm" type="button" data-act="r-del-no">Cancelar</button>`
+        : `<button class="btn btn-ghost btn-sm" type="button" data-act="r-use" data-id="${esc(r.id)}">Usar en Dial-in</button><button class="btn btn-ghost btn-sm" type="button" data-act="r-edit" data-id="${esc(r.id)}">Editar</button><button class="btn btn-ghost btn-sm" type="button" data-act="r-del" data-id="${esc(r.id)}">Borrar</button>`;
+      return `<div class="rrow"><div class="rc"><b><span class="mtag">${fil ? esc(r.brewer || 'Filtro') : 'Espresso'}</span>${esc(r.coffee || 'Todos sus cafés')}</b><span class="rline">${recipeLine(r)}</span>${r.notes ? `<span class="rnote">${esc(r.notes)}</span>` : ''}</div><div class="ops">${ops}</div></div>`;
+    }).join('')}</div>`).join('');
+  }
+  function renderDatalists() {
+    const seen = new Map();
+    [...store.recipes, ...store.shots].forEach(x => { const k = norm(x.roaster); if (k && !seen.has(k)) seen.set(k, String(x.roaster).trim()); });
+    $('roasterList').innerHTML = [...seen.values()].sort((a, b) => a.localeCompare(b, 'es')).map(v => `<option value="${esc(v)}"></option>`).join('');
+  }
+  function bindRecipes() {
+    document.querySelectorAll('input[name="rmethod"]').forEach(x => x.addEventListener('change', () => { if (x.checked) setRMethod(x.value); }));
+    const dec = () => rmethod === 'filtro' ? 1 : 2;
+    $('rpDose').addEventListener('input', () => { const d = num('rpDose'), r = num('rpRatio'), y = num('rpYield'); if (d && r) $('rpYield').value = (d * r).toFixed(1); else if (d && y) $('rpRatio').value = (y / d).toFixed(dec()); });
+    $('rpRatio').addEventListener('input', () => { const d = num('rpDose'), r = num('rpRatio'); if (d && r) $('rpYield').value = (d * r).toFixed(1); });
+    $('rpYield').addEventListener('input', () => { const d = num('rpDose'), y = num('rpYield'); if (d && y) $('rpRatio').value = (y / d).toFixed(dec()); });
+    $('rform').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const roaster = $('rpRoaster').value.trim(), dose = num('rpDose');
+      let ratio = num('rpRatio'), yld = num('rpYield');
+      if (!roaster) { toast('Indica el tostador.'); $('rpRoaster').focus(); return; }
+      if (!dose || !(ratio || yld)) { toast('Indica la dosis y el ratio o la cantidad.'); return; }
+      if (!yld) yld = +(dose * ratio).toFixed(1);
+      if (!ratio) ratio = +(yld / dose).toFixed(dec());
+      let tMin = num('rpTMin'), tMax = num('rpTMax');
+      if (tMin != null && tMax != null && tMin > tMax) [tMin, tMax] = [tMax, tMin];
+      const prev = rEditing ? store.recipes.find(r => r.id === rEditing) : null;
+      const rec = {
+        id: rEditing || 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        method: rmethod, brewer: rmethod === 'filtro' ? $('rpBrewer').value : '',
+        roaster, coffee: $('rpCoffee').value.trim(), dose, ratio, yield: yld, tMin, tMax,
+        temp: num('rpTemp'), grind: num('rpGrind'), notes: $('rpNotes').value.trim(),
+        createdAt: (prev && prev.createdAt) || new Date().toISOString(), updatedAt: new Date().toISOString()
+      };
+      const wasEditing = !!rEditing;
+      const btn = $('rSave'); btn.disabled = true;
+      const ok = await saveRecipe(rec);
+      btn.disabled = false;
+      if (ok) { toast(wasEditing ? 'Receta actualizada' : 'Receta guardada'); resetRForm(); }
+    });
+    $('rCancel').addEventListener('click', resetRForm);
+    $('btnNewRecipe').addEventListener('click', () => { resetRForm(); $('rform').scrollIntoView({ block: 'start' }); $('rpRoaster').focus({ preventScroll: true }); });
+    $('rlist').addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      const r = store.recipes.find(x => x.id === b.dataset.id);
+      const act = b.dataset.act;
+      if (act === 'r-use' && r) { applyRecipe(r, true); location.hash = 'dial-in'; toast('Receta patrón cargada en Dial-in'); }
+      else if (act === 'r-edit' && r) { fillRForm(r); $('rform').scrollIntoView({ block: 'start' }); }
+      else if (act === 'r-del') { rPendingDelete = b.dataset.id; renderRecipes(); }
+      else if (act === 'r-del-no') { rPendingDelete = null; renderRecipes(); }
+      else if (act === 'r-del-yes') { rPendingDelete = null; if (rEditing === b.dataset.id) resetRForm(); await deleteRecipe(b.dataset.id); toast('Receta borrada'); }
+    });
+    $('stdBox').addEventListener('click', (e) => {
+      if (e.target.closest('[data-act="apply-std"]') && stdCurrent) { applyRecipe(stdCurrent, false); toast('Receta patrón aplicada'); }
     });
   }
 
@@ -1111,7 +1348,7 @@
   function tipHtml(s) {
     const p = PROF[s.profile] || PROF.bal;
     const m = methodOf(s), fil = m === 'filtro';
-    return `<b>${esc(s.coffee || 'Extracción')}${fil ? ' · ' + esc(s.brewer || 'Filtro') : ''}</b><span class="num">${fmt(s.dose, 1)} → ${fmt(s.yield, fil ? 0 : 1)} g · 1:${fmt(s.ratio, fil ? 1 : 2)}<br>${fmtTime(s.time, m)}${s.ey != null ? ` · EY ${fmt(s.ey, 1)} % · TDS ${fmt(s.tds, 2)} %` : ''}</span><br>${esc(p.long)}${s.rating != null ? ` · nota ${fmt(s.rating, 1)}` : ''}<br><span style="opacity:.75">${esc(fmtDate(s.createdAt))}</span>`;
+    return `<b>${esc(s.coffee || 'Extracción')}${s.variety ? ' · ' + esc(s.variety) : ''}${fil ? ' · ' + esc(s.brewer || 'Filtro') : ''}</b><span class="num">${fmt(s.dose, 1)} → ${fmt(s.yield, fil ? 0 : 1)} g · 1:${fmt(s.ratio, fil ? 1 : 2)}<br>${fmtTime(s.time, m)}${s.ey != null ? ` · EY ${fmt(s.ey, 1)} % · TDS ${fmt(s.tds, 2)} %` : ''}</span><br>${esc(p.long)}${s.rating != null ? ` · nota ${fmt(s.rating, 1)}` : ''}<br><span style="opacity:.75">${esc(fmtDate(s.createdAt))}</span>`;
   }
   function attachTips(el, items, html) {
     let tip = el.querySelector('.tip');
@@ -1269,17 +1506,20 @@
   }
 
   // ---------- navegación ----------
-  const VIEWS = ['dial-in', 'diario', 'analisis', 'guia'];
+  const VIEWS = ['dial-in', 'recetas', 'diario', 'analisis', 'guia'];
   function route() {
     const h = location.hash.replace('#', '');
     const v = VIEWS.includes(h) ? h : 'dial-in';
     VIEWS.forEach(n => { $('view-' + n).hidden = n !== v; });
     document.querySelectorAll('nav.tabs a').forEach(a => { if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (v === 'recetas') renderRecipes();
     if (v === 'diario') renderLog();
     if (v === 'analisis') renderAnalysis();
     window.scrollTo(0, 0);
   }
   function renderAll() {
+    renderDatalists();
+    if (!$('view-recetas').hidden) renderRecipes();
     if (!$('view-diario').hidden) renderLog();
     if (!$('view-analisis').hidden) renderAnalysis();
   }
@@ -1288,7 +1528,9 @@
   function init() {
     const rd = new Date(Date.now() - 12 * dayMs); $('roastDate').value = rd.toISOString().slice(0, 10);
     store.shots = sortShots(loadLocal());
-    bindForm(); bindTimer(); bindLog();
+    store.recipes = sortRecipes(loadLocalRecipes());
+    bindForm(); bindTimer(); bindLog(); bindRecipes();
+    setRMethod('espresso');
     $('coffeeFilter').addEventListener('change', renderAnalysis);
     paintShapes();
     setMethod(lsGet('cafetea_method') || 'espresso');

@@ -2,7 +2,7 @@
 
 **Cuaderno de extracción para espresso y café de filtro.**
 
-Cafetea te ayuda a ajustar una receta (*dial-in*): anotas el café y la receta, cronometras la extracción, catas y la app calcula el ratio y la extracción y te dice qué cambiar en la siguiente. Cada extracción se guarda en un diario, y los gráficos muestran en qué tiempos y ratios te salen las tazas equilibradas.
+Cafetea te ayuda a ajustar una receta (*dial-in*): anotas el café y la receta, cronometras la extracción, catas y la app calcula el ratio y la extracción y te dice qué cambiar en la siguiente. Cada extracción se guarda en un diario, puedes guardar la receta patrón de cada tostador y los gráficos muestran en qué tiempos y ratios te salen las tazas equilibradas.
 
 🔗 **App publicada:** https://jlopez-i.github.io/cafetea/
 
@@ -25,17 +25,24 @@ Cafetea te ayuda a ajustar una receta (*dial-in*): anotas el café y la receta, 
 
 ### Dial-in
 - **Selector Espresso / Filtro.** Cada modo tiene sus propios valores por defecto, unidades y rangos, y recuerda lo último que escribiste al cambiar de uno a otro.
-- **Ficha del café:** tostador, origen, proceso (lavado, natural, honey, anaeróbico), nivel de tueste, fecha de tueste y notas del tostador. Calcula los **días de reposo** desde la fecha de tueste.
+- **Ficha del café:** tostador, origen, variedad (Gesha, Bourbon, Caturra, SL28… con sugerencias al escribir), proceso (lavado, natural, honey, anaeróbico), nivel de tueste, fecha de tueste y notas del tostador. Calcula los **días de reposo** desde la fecha de tueste.
 - **Receta:** dosis, ratio, bebida o agua (si cambias el ratio se recalcula la cantidad, y al revés), temperatura, punto de molienda y TDS opcional.
 - **Método de filtro:** V60, Kalita Wave, Chemex, Origami, AeroPress, prensa francesa u otro.
 - **Cronómetro integrado:** al pararlo, el tiempo pasa directamente a la receta. En espresso se muestra en segundos y en filtro en minutos.
 - **Cata:** perfil obtenido (ácido / equilibrado / amargo), dulzor, acidez, cuerpo y amargor de 1 a 5, valoración de 1 a 10 y notas libres.
 - **Lectura en vivo:** ratio, estilo (ristretto/normale/lungo o intenso/estándar/suave), tiempo, caudal o TDS y extracción (% EY), con una barra que sitúa el ratio en su rango.
+- **Receta patrón:** al escribir un tostador que tiene receta patrón, aparece encima de la receta con las diferencias respecto a la tuya (dosis, ratio, tiempo, temperatura) y el botón **Aplicar patrón**.
 - **Diagnóstico:** propone el siguiente ajuste según el perfil de cata, el tiempo, el ratio y la temperatura, y te avisa si el café es demasiado fresco o lleva mucho tiempo tostado.
+
+### Recetas patrón
+La receta de partida que recomienda cada tostador, normalmente en la bolsa o en su web.
+- Una receta por tostador y método (espresso o filtro). Puede servir para todos sus cafés o solo para uno concreto; si hay una para ese café, tiene prioridad sobre la general.
+- Campos: tostador, café (opcional), método de filtro, dosis, ratio y bebida o agua (enlazados), rango de tiempo, temperatura, molienda y notas.
+- Agrupadas por tostador, con botones **Usar en Dial-in**, **Editar** y **Borrar**.
 
 ### Diario
 - Historial de todas las extracciones, de la más reciente a la más antigua.
-- Búsqueda por tostador, origen, proceso, método o notas.
+- Búsqueda por tostador, origen, variedad, proceso, método o notas.
 - Filtros por perfil de cata y por método (espresso / filtro).
 - **Repetir** carga una receta guardada en Dial-in; **Borrar** pide confirmación.
 
@@ -58,12 +65,13 @@ Tablas de referencia: estilos de espresso, métodos de filtro, fórmulas de extr
 
 ## Cómo se usa
 
-1. En **Dial-in**, elige *Espresso* o *Filtro*.
-2. Rellena la ficha del café y la receta. Si tienes refractómetro, añade el TDS.
-3. Pulsa **Iniciar** en el cronómetro al empezar la extracción y **Parar** al terminar.
-4. Cata y marca el perfil, los atributos y la valoración.
-5. Lee el diagnóstico, pulsa **Guardar** y aplica el ajuste propuesto en la siguiente extracción. Cambia una sola variable cada vez.
-6. Consulta **Análisis** cuando tengas varias extracciones para ver tu ventana de tiempo y ratio.
+1. *(Una vez por tostador)* En **Recetas**, guarda la receta que recomienda.
+2. En **Dial-in**, elige *Espresso* o *Filtro*.
+3. Rellena la ficha del café y la receta. Si el tostador tiene receta patrón, pulsa **Aplicar patrón** para partir de ella. Si tienes refractómetro, añade el TDS.
+4. Pulsa **Iniciar** en el cronómetro al empezar la extracción y **Parar** al terminar.
+5. Cata y marca el perfil, los atributos y la valoración.
+6. Lee el diagnóstico, pulsa **Guardar** y aplica el ajuste propuesto en la siguiente extracción. Cambia una sola variable cada vez.
+7. Consulta **Análisis** cuando tengas varias extracciones para ver tu ventana de tiempo y ratio.
 
 > **Consejo:** *Partir del último* carga la receta de tu última extracción del método activo, para iterar sin volver a escribir todo.
 
@@ -96,7 +104,7 @@ Son puntos de partida habituales en café de especialidad, no reglas fijas: el c
 
 ## Datos y privacidad
 
-- La app **no tiene servidor ni cuentas**. En GitHub Pages todo se guarda en el `localStorage` de tu navegador, con la clave `cafetea_shots`.
+- La app **no tiene servidor ni cuentas**. En GitHub Pages todo se guarda en el `localStorage` de tu navegador: las extracciones en `cafetea_shots` y las recetas patrón en `cafetea_recipes`.
 - Los datos **no se sincronizan entre dispositivos ni navegadores**, y se pierden si borras los datos del sitio.
 - Si usaste la versión anterior (*Barista Lab*) en el mismo origen, sus registros se importan automáticamente la primera vez.
 - No se envía nada a terceros. La única petición externa es la carga de tipografías desde Google Fonts.
@@ -144,5 +152,5 @@ cafetea/
 - **Gráficos en SVG** dibujados a mano, con tooltips, sensibles al tamaño de pantalla y redundancia de forma y color (triángulo, círculo, cuadrado) para que se lean con daltonismo.
 - **Tema claro y oscuro** automático según el sistema.
 - **Diseño adaptable** a escritorio y móvil. Añadida a la pantalla de inicio del móvil, funciona como una app.
-- **Navegación por ancla**: `#dial-in`, `#diario`, `#analisis` y `#guia` se pueden enlazar directamente.
+- **Navegación por ancla**: `#dial-in`, `#recetas`, `#diario`, `#analisis` y `#guia` se pueden enlazar directamente.
 - **Tipografías:** Big Shoulders Display (títulos y cifras), Schibsted Grotesk (texto) y JetBrains Mono (datos), desde Google Fonts, con tipografías del sistema como respaldo.
